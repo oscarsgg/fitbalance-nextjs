@@ -40,7 +40,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"}`}>
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? "w-20" : "w-64"}`}>
       {/* Logo */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -98,7 +98,7 @@ export default function Sidebar() {
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center w-full px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-800 rounded-md transition-colors disabled:opacity-50"
+          className="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-800 rounded-md transition-colors disabled:opacity-50"
         >
           <LogOut className="h-5 w-5" />
           {!isCollapsed && <span className="ml-3">{isLoggingOut ? "Signing out..." : "Sign Out"}</span>}
