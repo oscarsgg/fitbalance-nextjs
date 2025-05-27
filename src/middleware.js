@@ -21,8 +21,11 @@ export function middleware(request) {
   // If accessing auth routes with valid token, redirect to dashboard
   if (isAuthRoute && token) {
     try {
-      jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
+      // Check if token has nutritionistId (new format)
+      if (decoded.nutritionistId) {
+        return NextResponse.redirect(new URL("/dashboard", request.url))
+      }
     } catch (error) {
       // Token is invalid, allow access to auth routes
       return NextResponse.next()

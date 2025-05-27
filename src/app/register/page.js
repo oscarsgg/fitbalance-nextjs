@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Eye, EyeOff, Scale, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -10,12 +11,13 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
+  const router = useRouter()
 
   const handleChange = (e) => {
     setFormData({
@@ -31,7 +33,8 @@ export default function RegisterPage() {
     setError("")
 
     try {
-      const response = await fetch("/api/auth/register", {
+      // Step 1: Register the user
+      const registerResponse = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,18 +42,32 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       })
 
-      const data = await response.json()
+      const registerData = await registerResponse.json()
 
-      if (response.ok) {
-        setSuccess("Account created successfully! You can now sign in.")
-        setFormData({
-          name: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
+      if (registerResponse.ok) {
+        // Step 2: Automatically log them in
+        const loginResponse = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
         })
+
+        const loginData = await loginResponse.json()
+
+        if (loginResponse.ok) {
+          // Step 3: Redirect to dashboard with success message
+          router.push("/dashboard?message=Welcome to FitBalance! Your account has been created successfully.")
+        } else {
+          // Registration worked but login failed, redirect to login
+          router.push("/login?message=Account created successfully! Please sign in.")
+        }
       } else {
-        setError(data.error || "Registration failed")
+        setError(registerData.error || "Registration failed")
       }
     } catch (error) {
       setError("Network error. Please try again.")
@@ -71,15 +88,11 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex justify-center">
           <div className="flex items-center">
-            <img
-                src="logo1.png"
-                alt="Logo FitBalance"
-                className="h-10 w-10 rounded-full border border-green-600"
-                />
+            <Scale className="h-8 w-8 text-green-600" />
             <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Create your account</h2>
+        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Create your nutritionist account</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Join FitBalance and start managing your nutritional practice
         </p>
@@ -91,16 +104,10 @@ export default function RegisterPage() {
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
           )}
 
-          {success && (
-            <div className="mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md">
-              {success}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
+                Full Name *
               </label>
               <div className="mt-1">
                 <input
@@ -118,7 +125,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email address *
               </label>
               <div className="mt-1">
                 <input
@@ -135,8 +142,25 @@ export default function RegisterPage() {
             </div>
 
             <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <div className="mt-1">
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Password *
               </label>
               <div className="mt-1 relative">
                 <input
@@ -155,9 +179,9 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-900" />
+                    <EyeOff className="h-5 w-5 text-gray-400" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-900" />
+                    <Eye className="h-5 w-5 text-gray-400" />
                   )}
                 </button>
               </div>
@@ -165,7 +189,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                Confirm Password *
               </label>
               <div className="mt-1 relative">
                 <input
@@ -198,7 +222,7 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? "Creating account..." : "Create nutritionist account"}
               </button>
             </div>
           </form>

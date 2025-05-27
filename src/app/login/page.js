@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, EyeOff, Scale, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -13,7 +13,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // Check for success message from registration
+    const message = searchParams.get("message")
+    if (message) {
+      setSuccessMessage(message)
+    }
+  }, [searchParams])
 
   const handleChange = (e) => {
     setFormData({
@@ -64,11 +74,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center">
           <div className="flex items-center">
-            <img
-                src="logo1.png"
-                alt="Logo FitBalance"
-                className="h-10 w-10 rounded-full border border-green-600"
-                />
+            <Scale className="h-8 w-8 text-green-600" />
             <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
           </div>
         </div>
@@ -80,6 +86,12 @@ export default function LoginPage() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md">
+              {successMessage}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">

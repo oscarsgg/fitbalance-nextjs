@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { User } from "@/models/User"
+import { Nutritionist } from "@/models/Nutritionist"
 import jwt from "jsonwebtoken"
 
 export async function POST(request) {
@@ -12,29 +12,33 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
-    // Find user
-    const user = await User.findByEmail(email.toLowerCase())
-    if (!user) {
+    // Find nutritionist
+    const nutritionist = await Nutritionist.findByEmail(email.toLowerCase())
+    if (!nutritionist) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
     // Verify password
-    const isValidPassword = await User.verifyPassword(password, user.password)
+    const isValidPassword = await Nutritionist.verifyPassword(password, nutritionist.password)
     if (!isValidPassword) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
-    // Check if user is active
-    if (!user.isActive) {
+    // Check if nutritionist is active
+    if (!nutritionist.isActive) {
       return NextResponse.json({ error: "Account is deactivated. Please contact support." }, { status: 401 })
     }
+
+    // Update last login
+    await Nutritionist.updateLastLogin(nutritionist._id)
 
     // Create JWT token
     const token = jwt.sign(
       {
-        userId: user._id,
-        email: user.email,
-        role: user.role,
+        nutritionistId: nutritionist._id,
+        email: nutritionist.email,
+        name: nutritionist.name,
+        specialization: nutritionist.specialization,
       },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "7d" },
@@ -44,11 +48,13 @@ export async function POST(request) {
     const response = NextResponse.json(
       {
         message: "Login successful",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+        nutritionist: {
+          id: nutritionist._id,
+          name: nutritionist.name,
+          email: nutritionist.email,
+          specialization: nutritionist.specialization,
+          licenseNumber: nutritionist.licenseNumber,
+          phone: nutritionist.phone,
         },
       },
       { status: 200 },

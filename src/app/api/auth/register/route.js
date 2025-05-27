@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
-import { User } from "@/models/User"
+import { Nutritionist } from "@/models/Nutritionist"
 
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { name, email, password, confirmPassword } = body
+    const { name, email, password, confirmPassword, phone } = body
 
     // Validation
     if (!name || !email || !password || !confirmPassword) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
+      return NextResponse.json({ error: "Name, email, password and confirm password are required" }, { status: 400 })
     }
 
     if (password !== confirmPassword) {
@@ -25,22 +25,21 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 })
     }
 
-    // Create user
-    const user = await User.create({
+    // Create nutritionist
+    const nutritionist = await Nutritionist.create({
       name,
       email: email.toLowerCase(),
       password,
-      role: "nutritionist",
+      phone,
     })
 
     return NextResponse.json(
       {
-        message: "User created successfully",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+        message: "Nutritionist account created successfully",
+        nutritionist: {
+          id: nutritionist._id,
+          name: nutritionist.name,
+          email: nutritionist.email,
         },
       },
       { status: 201 },
@@ -48,8 +47,8 @@ export async function POST(request) {
   } catch (error) {
     console.error("Registration error:", error)
 
-    if (error.message === "User already exists with this email") {
-      return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 })
+    if (error.message === "Nutritionist already exists with this email") {
+      return NextResponse.json({ error: "A nutritionist with this email already exists" }, { status: 409 })
     }
 
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
