@@ -9,23 +9,40 @@ import UpcomingAppointments from "../../components/dashboard/UpcomingAppointment
 
 export default function Dashboard() {
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch user data from MongoDB
-    fetch("/api/user")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok")
-        }
-        return response.json()
-      })
-      .then((data) => {
-        setUser(data)
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error)
-      })    
+    // Simulate user data loading
+    const loadUserData = async () => {
+      try {
+        const response = await fetch('/api/user/me')
+        const data = await response.json()
+        setUser(data.user)
+      } catch (error) {
+        console.error("Error loading user data:", error)
+        // Set default user even if there's an error
+        setUser({ name: "Doctor" })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUserData()
   }, [])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -37,7 +54,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-              <p className="text-gray-600">Welcome back, INSERTE NOMBRE XD</p>
+              <p className="text-gray-600">Welcome back, {user?.name || "Doctor"}</p>
             </div>
             <div className="flex items-center space-x-4">
               <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
