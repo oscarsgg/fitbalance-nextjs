@@ -63,7 +63,7 @@ export class Appointment {
       const existingAppointments = await db
         .collection("Appointments")
         .find({
-          nutritionist_id: new ObjectId(nutritionistId),
+          nutritionist_id: nutritionistId,
           appointment_date: date,
           status: { $in: ["scheduled", "completed"] }, // Don't check cancelled appointments
         })
@@ -97,48 +97,45 @@ export class Appointment {
 
   // Get appointments for nutritionist
   static async findByNutritionist(nutritionistId, filters = {}) {
-    try {
-      const client = await clientPromise
-      const db = client.db("fitbalance")
+  const client = await clientPromise
+  const db = client.db()
 
-      const query = { nutritionist_id: new ObjectId(nutritionistId) }
+  const { ObjectId } = require("mongodb")
 
-      // Add date filters if provided
-      if (filters.startDate && filters.endDate) {
-        query.appointment_date = {
-          $gte: filters.startDate,
-          $lte: filters.endDate,
-        }
-      } else if (filters.date) {
-        query.appointment_date = filters.date
-      }
+  const query = { nutritionist_id: nutritionistId }
 
-      // Add status filter if provided
-      if (filters.status) {
-        query.status = filters.status
-      }
-
-      const appointments = await db
-        .collection("Appointments")
-        .find(query)
-        .sort({ appointment_date: 1, appointment_time: 1 })
-        .toArray()
-
-      return appointments
-    } catch (error) {
-      throw error
-    }
+if (filters.startDate && filters.endDate) {
+  query.appointment_date = {
+    $gte: filters.startDate,
+    $lte: filters.endDate,
   }
+} else if (filters.date) {
+  query.appointment_date = filters.date
+}
+
+
+  if (filters.status) {
+    query.status = filters.status
+  }
+
+  console.log("Mongo query:", query)
+
+  const appointments = await db.collection("appointments").find(query).toArray()
+  return appointments
+}
+
+
 
   // Get today's appointments
   static async getTodaysAppointments(nutritionistId) {
-    try {
-      const today = new Date().toISOString().split("T")[0]
-      return await Appointment.findByNutritionist(nutritionistId, { date: today })
-    } catch (error) {
-      throw error
-    }
+  try {
+    const today = new Date().toISOString().split("T")[0]
+    return await Appointment.findByNutritionist(nutritionistId, { appointment_date: today })
+  } catch (error) {
+    throw error
   }
+}
+
 
   // Update appointment status
   static async updateStatus(appointmentId, status, notes = null) {

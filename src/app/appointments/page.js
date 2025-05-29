@@ -15,6 +15,8 @@ export default function AppointmentsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const todayLocal = new Date().toLocaleDateString("en-CA") // formato YYYY-MM-DD local
+
 
   useEffect(() => {
     loadAppointments()
@@ -75,7 +77,16 @@ export default function AppointmentsPage() {
   }
 
   const handleToday = () => {
-    setSelectedDate(new Date().toISOString().split("T")[0])
+    const today = new Date()
+    const offset = today.getTimezoneOffset()
+    const localDate = new Date(today.getTime() - offset * 60 * 1000)
+    setSelectedDate(localDate.toISOString().split("T")[0])
+  }
+
+
+  function parseLocalDate(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number)
+    return new Date(year, month - 1, day) // new Date(año, mes (0-11), día)
   }
 
   // Filter appointments based on search term
@@ -88,8 +99,9 @@ export default function AppointmentsPage() {
 
   // Get appointments stats
   const todayAppointments = appointments.filter(
-    (apt) => apt.appointment_date === new Date().toISOString().split("T")[0],
+    (apt) => apt.appointment_date === todayLocal
   )
+
   const scheduledCount = appointments.filter((apt) => apt.status === "scheduled").length
   const completedCount = appointments.filter((apt) => apt.status === "completed").length
 
@@ -245,12 +257,12 @@ export default function AppointmentsPage() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Appointments for{" "}
-                  {new Date(selectedDate).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                    {parseLocalDate(selectedDate).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                 </h2>
               </div>
 
