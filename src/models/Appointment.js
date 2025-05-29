@@ -37,13 +37,24 @@ export class Appointment {
       }
 
       const appointment = new Appointment(appointmentData)
+
+      // Asegurar que nutritionist_id sea ObjectId
+      if (typeof appointment.nutritionist_id === "string") {
+        appointment.nutritionist_id = new ObjectId(appointment.nutritionist_id)
+      }
+
+      console.log("Guardando cita en DB:", JSON.stringify(appointment, null, 2))
       const result = await db.collection("Appointments").insertOne(appointment)
 
-      return {
+      const createdAppointment = {
         _id: result.insertedId,
         ...appointment,
       }
+
+      console.log("Cita guardada exitosamente con ID:", result.insertedId)
+      return createdAppointment
     } catch (error) {
+      console.error("Error al crear cita:", error)
       throw error
     }
   }
@@ -59,11 +70,14 @@ export class Appointment {
       const appointmentStart = hours * 60 + minutes
       const appointmentEnd = appointmentStart + duration
 
+      // Asegurar que nutritionistId sea ObjectId
+      const nutritionistObjectId = typeof nutritionistId === "string" ? new ObjectId(nutritionistId) : nutritionistId
+
       // Find all appointments for this nutritionist on this date
       const existingAppointments = await db
         .collection("Appointments")
         .find({
-          nutritionist_id: nutritionistId,
+          nutritionist_id: nutritionistObjectId,
           appointment_date: date,
           status: { $in: ["scheduled", "completed"] }, // Don't check cancelled appointments
         })
@@ -91,51 +105,80 @@ export class Appointment {
 
       return { hasConflict: false }
     } catch (error) {
+      console.error("Error checking time conflict:", error)
       throw error
     }
   }
 
   // Get appointments for nutritionist
   static async findByNutritionist(nutritionistId, filters = {}) {
-  const client = await clientPromise
-  const db = client.db()
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
 
-  const { ObjectId } = require("mongodb")
+      // Asegurar que nutritionistId sea ObjectId
+      const nutritionistObjectId = typeof nutritionistId === "string" ? new ObjectId(nutritionistId) : nutritionistId
 
-  const query = { nutritionist_id: nutritionistId }
+      const query = { nutritionist_id: nutritionistObjectId }
 
-if (filters.startDate && filters.endDate) {
-  query.appointment_date = {
-    $gte: filters.startDate,
-    $lte: filters.endDate,
+      console.log("Construyendo query con nutritionist_id:", nutritionistId)
+
+      // Add date filters if provided
+      if (filters.startDate && filters.endDate) {
+        query.appointment_date = {
+          $gte: filters.startDate,
+          $lte: filters.endDate,
+        }
+        console.log("Filtro de rango de fechas:", filters.startDate, "a", filters.endDate)
+      } else if (filters.date) {
+        query.appointment_date = filters.date
+        console.log("Filtro de fecha específica:", filters.date)
+      }
+
+      // Add status filter if provided
+      if (filters.status) {
+        query.status = filters.status
+        console.log("Filtro de estado:", filters.status)
+      }
+
+      console.log("Query final para MongoDB:", JSON.stringify(query, null, 2))
+
+      // Primero, vamos a ver todas las citas de este nutricionista sin filtros
+      const allAppointments = await db
+        .collection("Appointments")
+        .find({ nutritionist_id: nutritionistObjectId })
+        .toArray()
+
+      console.log("Todas las citas del nutricionista:", allAppointments.length)
+      if (allAppointments.length > 0) {
+        console.log("Ejemplo de cita en DB:", JSON.stringify(allAppointments[0], null, 2))
+      }
+
+      // Ahora hacer la consulta con filtros
+      const appointments = await db
+        .collection("Appointments")
+        .find(query)
+        .sort({ appointment_date: 1, appointment_time: 1 })
+        .toArray()
+
+      console.log("Citas encontradas con filtros:", appointments.length)
+
+      return appointments
+    } catch (error) {
+      console.error("Error al buscar citas:", error)
+      throw error
+    }
   }
-} else if (filters.date) {
-  query.appointment_date = filters.date
-}
-
-
-  if (filters.status) {
-    query.status = filters.status
-  }
-
-  console.log("Mongo query:", query)
-
-  const appointments = await db.collection("appointments").find(query).toArray()
-  return appointments
-}
-
-
 
   // Get today's appointments
   static async getTodaysAppointments(nutritionistId) {
-  try {
-    const today = new Date().toISOString().split("T")[0]
-    return await Appointment.findByNutritionist(nutritionistId, { appointment_date: today })
-  } catch (error) {
-    throw error
+    try {
+      const today = new Date().toISOString().split("T")[0]
+      return await Appointment.findByNutritionist(nutritionistId, { date: today })
+    } catch (error) {
+      throw error
+    }
   }
-}
-
 
   // Update appointment status
   static async updateStatus(appointmentId, status, notes = null) {

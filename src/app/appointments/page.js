@@ -15,12 +15,12 @@ export default function AppointmentsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const todayLocal = new Date().toLocaleDateString("en-CA") // formato YYYY-MM-DD local
-
 
   useEffect(() => {
     loadAppointments()
-  }, [selectedDate, statusFilter])
+  }, [selectedDate, statusFilter, refreshTrigger, view]) // Agregamos view y refreshTrigger como dependencias
 
   const loadAppointments = async () => {
     try {
@@ -30,6 +30,7 @@ export default function AppointmentsPage() {
       if (view === "list") {
         // For list view, get appointments for selected date
         params.append("date", selectedDate)
+        console.log("Cargando citas para fecha específica:", selectedDate)
       } else {
         // For calendar view, get appointments for the whole month
         const date = new Date(selectedDate)
@@ -37,31 +38,72 @@ export default function AppointmentsPage() {
         const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split("T")[0]
         params.append("startDate", startOfMonth)
         params.append("endDate", endOfMonth)
+        console.log("Cargando citas para rango de fechas:", startOfMonth, "a", endOfMonth)
       }
 
       if (statusFilter !== "all") {
         params.append("status", statusFilter)
       }
 
-      const response = await fetch(`/api/appointments?${params}`)
+      console.log("URL de consulta:", `/api/appointments?${params.toString()}`)
+      const response = await fetch(`/api/appointments?${params.toString()}`, {
+        credentials: "include", // Asegurar que las cookies se envíen
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
       if (response.ok) {
         const data = await response.json()
-        setAppointments(data.appointments)
+        console.log("Citas recibidas de la API:", data.appointments)
+        console.log("Número de citas:", data.appointments?.length || 0)
+
+        // Verificar el formato de las fechas
+        if (data.appointments && data.appointments.length > 0) {
+          console.log("Ejemplo de cita:", data.appointments[0])
+          data.appointments.forEach((apt, index) => {
+            console.log(`Cita ${index + 1}:`, {
+              date: apt.appointment_date,
+              time: apt.appointment_time,
+              patient: apt.patient_name,
+              status: apt.status,
+            })
+          })
+        }
+
+        setAppointments(data.appointments || [])
+      } else {
+        const errorText = await response.text()
+        console.error("Error al cargar citas:", response.status, errorText)
+        setAppointments([])
       }
     } catch (error) {
       console.error("Error loading appointments:", error)
+      setAppointments([])
     } finally {
       setLoading(false)
     }
   }
 
   const handleAppointmentSuccess = () => {
+    console.log("Cita creada exitosamente, recargando lista...")
     setShowAddAppointment(false)
-    loadAppointments()
+    // Forzar recarga de citas con un pequeño delay para asegurar que la DB se actualice
+    setTimeout(() => {
+      setRefreshTrigger((prev) => prev + 1)
+    }, 500)
   }
 
   const handleDateChange = (newDate) => {
+    console.log("Cambiando fecha seleccionada a:", newDate)
     setSelectedDate(newDate)
+  }
+
+  const handleViewChange = (newView) => {
+    console.log("Cambiando vista a:", newView)
+    setView(newView)
+    // Forzar recarga cuando cambie la vista
+    setRefreshTrigger((prev) => prev + 1)
   }
 
   const handlePrevDay = () => {
@@ -83,7 +125,6 @@ export default function AppointmentsPage() {
     setSelectedDate(localDate.toISOString().split("T")[0])
   }
 
-
   function parseLocalDate(dateString) {
     const [year, month, day] = dateString.split("-").map(Number)
     return new Date(year, month - 1, day) // new Date(año, mes (0-11), día)
@@ -92,15 +133,13 @@ export default function AppointmentsPage() {
   // Filter appointments based on search term
   const filteredAppointments = appointments.filter(
     (appointment) =>
-      appointment.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.appointment_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.appointment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (appointment.patient_email && appointment.patient_email.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
   // Get appointments stats
-  const todayAppointments = appointments.filter(
-    (apt) => apt.appointment_date === todayLocal
-  )
+  const todayAppointments = appointments.filter((apt) => apt.appointment_date === todayLocal)
 
   const scheduledCount = appointments.filter((apt) => apt.status === "scheduled").length
   const completedCount = appointments.filter((apt) => apt.status === "completed").length
@@ -124,7 +163,7 @@ export default function AppointmentsPage() {
               {/* View Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setView("list")}
+                  onClick={() => handleViewChange("list")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                     view === "list" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -132,7 +171,7 @@ export default function AppointmentsPage() {
                   List
                 </button>
                 <button
-                  onClick={() => setView("calendar")}
+                  onClick={() => handleViewChange("calendar")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                     view === "calendar" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}
@@ -193,6 +232,15 @@ export default function AppointmentsPage() {
             </div>
           </div>
         </div>
+
+        {/* Debug Info */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="px-6 py-2 bg-yellow-50 border-b border-yellow-200">
+            <p className="text-xs text-yellow-800">
+              Debug: Vista actual: {view} | Fecha seleccionada: {selectedDate} | Citas cargadas: {appointments.length}
+            </p>
+          </div>
+        )}
 
         {/* Filters and Controls */}
         <div className="px-6 py-4 bg-white border-b border-gray-200">
@@ -257,12 +305,12 @@ export default function AppointmentsPage() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Appointments for{" "}
-                    {parseLocalDate(selectedDate).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                  {parseLocalDate(selectedDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </h2>
               </div>
 
@@ -292,7 +340,11 @@ export default function AppointmentsPage() {
                   {filteredAppointments
                     .sort((a, b) => a.appointment_time.localeCompare(b.appointment_time))
                     .map((appointment) => (
-                      <AppointmentCard key={appointment._id} appointment={appointment} onUpdate={loadAppointments} />
+                      <AppointmentCard
+                        key={appointment._id}
+                        appointment={appointment}
+                        onUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+                      />
                     ))}
                 </div>
               )}
