@@ -8,12 +8,14 @@ import DashboardStats from "../../components/dashboard/DashboardStats"
 import RecentActivity from "../../components/dashboard/RecentActivity"
 import QuickActions from "../../components/dashboard/QuickActions"
 import UpcomingAppointments from "../../components/dashboard/UpcomingAppointments"
+import AddPatientForm from "../../components/patients/AddPatientForm"
 
 export default function Dashboard() {
   const [nutritionist, setNutritionist] = useState(null)
   const [loading, setLoading] = useState(true)
   const [successMessage, setSuccessMessage] = useState("")
   const searchParams = useSearchParams()
+  const [showAddPatient, setShowAddPatient] = useState(false)
 
   useEffect(() => {
     // Check for success message from registration
@@ -49,6 +51,12 @@ export default function Dashboard() {
 
     loadNutritionistData()
   }, [])
+
+  const handlePatientSuccess = (patient) => {
+    setShowAddPatient(false)
+    // You could refresh patient list here if needed
+    console.log("Patient created:", patient)
+  }
 
   if (loading) {
     return (
@@ -102,7 +110,10 @@ export default function Dashboard() {
               <p className="text-gray-600">Welcome back, {nutritionist?.name || "Doctor"}</p>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+              <button
+                onClick={() => setShowAddPatient(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
                 Add New Patient
               </button>
             </div>
@@ -130,6 +141,13 @@ export default function Dashboard() {
             </div>
           </div>
         </main>
+
+        {/* Add Patient Modal */}
+        <AddPatientForm
+          isOpen={showAddPatient}
+          onClose={() => setShowAddPatient(false)}
+          onSuccess={handlePatientSuccess}
+        />
       </div>
     </div>
   )
