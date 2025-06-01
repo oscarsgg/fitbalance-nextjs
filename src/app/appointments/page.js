@@ -20,19 +20,17 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     loadAppointments()
-  }, [selectedDate, statusFilter, refreshTrigger, view]) // Agregamos view y refreshTrigger como dependencias
+  }, [loadAppointments, refreshTrigger])
 
-  const loadAppointments = async () => {
+    const loadAppointments = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
 
       if (view === "list") {
-        // For list view, get appointments for selected date
         params.append("date", selectedDate)
         console.log("Cargando citas para fecha específica:", selectedDate)
       } else {
-        // For calendar view, get appointments for the whole month
         const date = new Date(selectedDate)
         const start = new Date(date.getFullYear(), date.getMonth(), 1)
         const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
@@ -50,8 +48,9 @@ export default function AppointmentsPage() {
       }
 
       console.log("URL de consulta:", `/api/appointments?${params.toString()}`)
+
       const response = await fetch(`/api/appointments?${params.toString()}`, {
-        credentials: "include", // Asegurar que las cookies se envíen
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -62,7 +61,6 @@ export default function AppointmentsPage() {
         console.log("Citas recibidas de la API:", data.appointments)
         console.log("Número de citas:", data.appointments?.length || 0)
 
-        // Verificar el formato de las fechas
         if (data.appointments && data.appointments.length > 0) {
           console.log("Ejemplo de cita:", data.appointments[0])
           data.appointments.forEach((apt, index) => {
@@ -87,7 +85,7 @@ export default function AppointmentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedDate, statusFilter, view])
 
   const handleAppointmentSuccess = () => {
     console.log("Cita creada exitosamente, recargando lista...")
@@ -205,7 +203,7 @@ export default function AppointmentsPage() {
               <div className="flex items-center">
                 <Calendar className="h-8 w-8 text-green-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-600">Today's Appointments</p>
+                  <p className="text-sm font-medium text-green-600">Todays Appointments</p>
                   <p className="text-2xl font-bold text-green-800">{todayAppointments.length}</p>
                 </div>
               </div>
