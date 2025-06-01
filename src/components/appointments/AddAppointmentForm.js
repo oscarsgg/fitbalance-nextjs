@@ -285,8 +285,8 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-              <Calendar className="h-5 w-5 text-blue-600" />
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+              <Calendar className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Schedule Appointment</h2>
@@ -305,7 +305,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
               {/* Patient Selection */}
               <div className="md:col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-blue-600" />
+                  <User className="h-5 w-5 mr-2 text-green-600" />
                   Patient Information
                 </h3>
               </div>
@@ -350,7 +350,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Search by name, email, or username..."
                     />
                   </div>
@@ -385,7 +385,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                       required
                       value={formData.patient_name}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="John Doe"
                     />
                   </div>
@@ -400,7 +400,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                       type="email"
                       value={formData.patient_email}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -415,7 +415,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                       type="tel"
                       value={formData.patient_phone}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="+1 (555) 123-4567"
                     />
                   </div>
@@ -425,7 +425,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
               {/* Appointment Details */}
               <div className="md:col-span-2 mt-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                  <Clock className="h-5 w-5 mr-2 text-green-600" />
                   Appointment Details
                 </h3>
               </div>
@@ -442,7 +442,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   min={getMinDate()}
                   value={formData.appointment_date}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
 
@@ -456,7 +456,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   required
                   value={formData.appointment_time}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Select time</option>
                   {availableSlots.map((slot) => (
@@ -480,7 +480,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   required
                   value={formData.appointment_type}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Select type</option>
                   <option value="initial">Initial Consultation</option>
@@ -500,7 +500,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   name="duration_minutes"
                   value={formData.duration_minutes}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value={30}>30 minutes</option>
                   <option value={45}>45 minutes</option>
@@ -520,7 +520,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   rows={3}
                   value={formData.notes}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Additional notes for this appointment..."
                 />
               </div>
@@ -541,7 +541,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
             type="submit"
             disabled={isLoading}
             onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isLoading ? (
               <>

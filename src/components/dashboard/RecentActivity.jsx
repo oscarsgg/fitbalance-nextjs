@@ -5,7 +5,7 @@ export default function RecentActivity() {
     {
       id: 1,
       type: "patient_added",
-      message: "New patient Sarah Johnson was added",
+      message: "New patient Brian Sanchez was added",
       time: "2 hours ago",
       icon: User,
       color: "bg-blue-500",
@@ -13,7 +13,7 @@ export default function RecentActivity() {
     {
       id: 2,
       type: "meal_plan",
-      message: "Meal plan updated for John Doe",
+      message: "Meal plan updated for Miguel León",
       time: "4 hours ago",
       icon: FileText,
       color: "bg-green-500",
@@ -21,7 +21,7 @@ export default function RecentActivity() {
     {
       id: 3,
       type: "appointment",
-      message: "Appointment scheduled with Maria Garcia",
+      message: "Appointment scheduled with María García",
       time: "6 hours ago",
       icon: Calendar,
       color: "bg-purple-500",
@@ -29,7 +29,7 @@ export default function RecentActivity() {
     {
       id: 4,
       type: "weight_update",
-      message: "Weight update received from IoT scale for Patient #127",
+      message: "Weight update received from scale for José Slobotzky",
       time: "8 hours ago",
       icon: Clock,
       color: "bg-orange-500",
@@ -37,7 +37,7 @@ export default function RecentActivity() {
     {
       id: 5,
       type: "meal_plan",
-      message: "Meal plan created for new patient Alex Smith",
+      message: "Meal plan created for new patient Oscar Soto",
       time: "1 day ago",
       icon: FileText,
       color: "bg-green-500",

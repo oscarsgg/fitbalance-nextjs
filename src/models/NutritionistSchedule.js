@@ -29,7 +29,7 @@ export class NutritionistSchedule {
       const existingSchedule = await db.collection("NutritionistSchedules").findOne({
         $or: [
           { nutritionist_id: scheduleData.nutritionist_id },
-          { nutritionist_id: nutritionistId },
+          { nutritionist_id: new ObjectId(scheduleData.nutritionist_id) },
         ],
       })
 
@@ -45,7 +45,7 @@ export class NutritionistSchedule {
           {
             $or: [
               { nutritionist_id: scheduleData.nutritionist_id },
-              { nutritionist_id: nutritionistId },
+              { nutritionist_id: new ObjectId(scheduleData.nutritionist_id) },
             ],
           },
           { $set: updateData },
@@ -72,25 +72,20 @@ export class NutritionistSchedule {
   }
 
   // Get schedule by nutritionist
-  // Get schedule by nutritionist
-    static async findByNutritionist(nutritionistId) {
-      try {
-        const client = await clientPromise
-        const db = client.db("fitbalance")
+  static async findByNutritionist(nutritionistId) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
 
-        console.log("Buscando horario para nutritionist_id:", nutritionistId)
+      const schedule = await db.collection("NutritionistSchedules").findOne({
+        $or: [{ nutritionist_id: nutritionistId }, { nutritionist_id: new ObjectId(nutritionistId) }],
+      })
 
-
-        const schedule = await db.collection("NutritionistSchedules").findOne({
-          nutritionist_id: nutritionistId, // sin ObjectId()
-        })
-
-        return schedule
-      } catch (error) {
-        throw error
-      }
+      return schedule
+    } catch (error) {
+      throw error
     }
-
+  }
 
   // Generate available time slots for a specific date
   static async getAvailableSlots(nutritionistId, date) {
@@ -101,7 +96,10 @@ export class NutritionistSchedule {
       }
 
       // Check if the date is a working day
-      const dayOfWeek = new Date(date).toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
+      const [y, m, d] = date.split("-")
+      const localDate = new Date(y, m - 1, d)
+      const dayOfWeek = localDate.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
+
       if (!schedule.working_days.includes(dayOfWeek)) {
         return [] // Not a working day
       }

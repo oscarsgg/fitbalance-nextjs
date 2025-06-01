@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
+import { ObjectId } from "mongodb"
 import { Patient } from "@/models/Patient"
 
 export async function POST(request) {
@@ -72,8 +73,9 @@ export async function POST(request) {
       allergies: Array.isArray(alergias) ? alergias : [],
       dietary_restrictions: Array.isArray(restricciones_alimentarias) ? restricciones_alimentarias : [],
       notes: notas,
-      nutritionist_id: decoded.nutritionistId,
+      nutritionist_id: new ObjectId(decoded.nutritionistId),
     }
+
 
     // Create patient
     const patient = await Patient.create(patientData)

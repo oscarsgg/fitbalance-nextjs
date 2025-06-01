@@ -12,7 +12,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAddAppointment, setShowAddAppointment] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }))
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -34,8 +34,12 @@ export default function AppointmentsPage() {
       } else {
         // For calendar view, get appointments for the whole month
         const date = new Date(selectedDate)
-        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split("T")[0]
-        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split("T")[0]
+        const start = new Date(date.getFullYear(), date.getMonth(), 1)
+        const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+
+        const startOfMonth = start.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+        const endOfMonth = end.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+
         params.append("startDate", startOfMonth)
         params.append("endDate", endOfMonth)
         console.log("Cargando citas para rango de fechas:", startOfMonth, "a", endOfMonth)
@@ -112,18 +116,21 @@ export default function AppointmentsPage() {
     setSelectedDate(prevDay.toISOString().split("T")[0])
   }
 
+
   const handleNextDay = () => {
-    const nextDay = new Date(selectedDate)
-    nextDay.setDate(nextDay.getDate() + 1)
-    setSelectedDate(nextDay.toISOString().split("T")[0])
-  }
+      const nextDate = new Date(selectedDate)
+      nextDate.setDate(nextDate.getDate() + 1)
+      setSelectedDate(nextDate.toISOString().split("T")[0])
+    }
+
+
 
   const handleToday = () => {
     const today = new Date()
-    const offset = today.getTimezoneOffset()
-    const localDate = new Date(today.getTime() - offset * 60 * 1000)
-    setSelectedDate(localDate.toISOString().split("T")[0])
+    const localDate = today.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+    setSelectedDate(localDate)
   }
+
 
   function parseLocalDate(dateString) {
     const [year, month, day] = dateString.split("-").map(Number)
@@ -153,7 +160,7 @@ export default function AppointmentsPage() {
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-blue-600 mr-3" />
+              <Calendar className="h-8 w-8 text-green-600 mr-3" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">Appointments</h1>
                 <p className="text-gray-600">Manage your appointment schedule</p>
@@ -165,7 +172,7 @@ export default function AppointmentsPage() {
                 <button
                   onClick={() => handleViewChange("list")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    view === "list" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                    view === "list" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   List
@@ -173,7 +180,7 @@ export default function AppointmentsPage() {
                 <button
                   onClick={() => handleViewChange("calendar")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    view === "calendar" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                    view === "calendar" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   Calendar
@@ -182,7 +189,7 @@ export default function AppointmentsPage() {
 
               <button
                 onClick={() => setShowAddAppointment(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center"
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Appointment
@@ -192,27 +199,27 @@ export default function AppointmentsPage() {
         </header>
 
         {/* Stats Cards */}
-        <div className="px-6 py-4 bg-white border-b border-gray-200">
+        <div className="px-6 py-2 bg-white border-b border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="bg-green-50 rounded-lg p-2">
               <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-blue-600" />
+                <Calendar className="h-8 w-8 text-green-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-blue-600">Today's Appointments</p>
-                  <p className="text-2xl font-bold text-blue-800">{todayAppointments.length}</p>
+                  <p className="text-sm font-medium text-green-600">Today's Appointments</p>
+                  <p className="text-2xl font-bold text-green-800">{todayAppointments.length}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-blue-50 rounded-lg p-2">
               <div className="flex items-center">
-                <Clock className="h-8 w-8 text-green-600" />
+                <Clock className="h-8 w-8 text-blue-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-600">Scheduled</p>
-                  <p className="text-2xl font-bold text-green-800">{scheduledCount}</p>
+                  <p className="text-sm font-medium text-blue-600">Scheduled</p>
+                  <p className="text-2xl font-bold text-blue-800">{scheduledCount}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4">
+            <div className="bg-purple-50 rounded-lg p-2">
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-purple-600" />
                 <div className="ml-3">
@@ -221,7 +228,7 @@ export default function AppointmentsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4">
+            <div className="bg-orange-50 rounded-lg p-2">
               <div className="flex items-center">
                 <Filter className="h-8 w-8 text-orange-600" />
                 <div className="ml-3">
@@ -232,15 +239,6 @@ export default function AppointmentsPage() {
             </div>
           </div>
         </div>
-
-        {/* Debug Info */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="px-6 py-2 bg-yellow-50 border-b border-yellow-200">
-            <p className="text-xs text-yellow-800">
-              Debug: Vista actual: {view} | Fecha seleccionada: {selectedDate} | Citas cargadas: {appointments.length}
-            </p>
-          </div>
-        )}
 
         {/* Filters and Controls */}
         <div className="px-6 py-4 bg-white border-b border-gray-200">
@@ -330,7 +328,7 @@ export default function AppointmentsPage() {
                   </p>
                   <button
                     onClick={() => setShowAddAppointment(true)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition-colors"
                   >
                     Schedule New Appointment
                   </button>

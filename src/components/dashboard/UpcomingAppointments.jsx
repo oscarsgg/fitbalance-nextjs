@@ -4,21 +4,21 @@ export default function UpcomingAppointments() {
   const appointments = [
     {
       id: 1,
-      patient: "Sarah Johnson",
+      patient: "Kevin Álvarez",
       time: "10:00 AM",
       type: "Follow-up",
       avatar: "SJ",
     },
     {
       id: 2,
-      patient: "Mike Chen",
+      patient: "María García",
       time: "2:30 PM",
       type: "Initial Consultation",
       avatar: "MC",
     },
     {
       id: 3,
-      patient: "Emma Davis",
+      patient: "Emma Flores",
       time: "4:00 PM",
       type: "Progress Review",
       avatar: "ED",

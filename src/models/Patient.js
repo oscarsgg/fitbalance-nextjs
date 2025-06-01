@@ -85,10 +85,13 @@ export class Patient {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
-      // Generate unique username
-      const username = await Patient.generateUniqueUsername(patientData.name)
+      // Convert nutritionist_id a ObjectId si no lo es
+      if (typeof patientData.nutritionist_id === "string") {
+        patientData.nutritionist_id = new ObjectId(patientData.nutritionist_id)
+      }
 
-      // Default password is "123456"
+      // Generar username, hash password, etc.
+      const username = await Patient.generateUniqueUsername(patientData.name)
       const defaultPassword = "123456"
       const hashedPassword = await bcrypt.hash(defaultPassword, 12)
 
@@ -100,12 +103,11 @@ export class Patient {
 
       const result = await db.collection("Patients").insertOne(patient)
 
-      // Return patient without password
       const { password, ...patientWithoutPassword } = patient
       return {
         _id: result.insertedId,
         ...patientWithoutPassword,
-        defaultPassword, // Return the plain password for display
+        defaultPassword,
       }
     } catch (error) {
       throw error

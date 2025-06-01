@@ -55,7 +55,7 @@ export default function Sidebar() {
           {!isCollapsed ? (
             <div className="flex items-center">
               <img
-                src="logo1.png"
+                src="/logo1.png"
                 alt="Logo FitBalance"
                 className="h-10 w-10 rounded-full border border-green-600"
               />
@@ -63,7 +63,7 @@ export default function Sidebar() {
             </div>
           ) : (
             <img
-              src="logo1.png"
+              src="/logo1.png"
               alt="Logo FitBalance"
               className="h-8 w-8 rounded-full border border-green-600"
             />
