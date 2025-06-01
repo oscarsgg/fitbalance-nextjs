@@ -18,10 +18,6 @@ export default function AppointmentsPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const todayLocal = new Date().toLocaleDateString("en-CA") // formato YYYY-MM-DD local
 
-  useEffect(() => {
-    loadAppointments()
-  }, [loadAppointments, refreshTrigger])
-
     const loadAppointments = useCallback(async () => {
     try {
       setLoading(true)
@@ -86,6 +82,10 @@ export default function AppointmentsPage() {
       setLoading(false)
     }
   }, [selectedDate, statusFilter, view])
+
+  useEffect(() => {
+    loadAppointments()
+  }, [loadAppointments, refreshTrigger])
 
   const handleAppointmentSuccess = () => {
     console.log("Cita creada exitosamente, recargando lista...")
