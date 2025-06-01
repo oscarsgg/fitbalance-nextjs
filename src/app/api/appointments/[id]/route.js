@@ -1,3 +1,4 @@
+import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
 import { Appointment } from "@/models/Appointment"
@@ -5,7 +6,8 @@ import { Appointment } from "@/models/Appointment"
 export async function PATCH(request, { params }) {
   try {
     // Get token from cookies
-    const token = request.cookies.get("token")?.value
+    const cookieStore = cookies()
+    const token = cookieStore.get("token")?.value
 
     if (!token) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 })
