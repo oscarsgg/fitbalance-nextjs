@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback  } from "react"
 import { Calendar, Clock, Plus, Filter, Search, ChevronLeft, ChevronRight, Users } from "lucide-react"
 import Sidebar from "../../components/layout/Sidebar"
 import AddAppointmentForm from "../../components/appointments/AddAppointmentForm"
