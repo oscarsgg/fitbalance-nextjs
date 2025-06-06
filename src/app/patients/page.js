@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Users, Plus, Search, Filter, ArrowUpDown } from "lucide-react"
 import Sidebar from "../../components/layout/Sidebar"
 import AddPatientForm from "../../components/patients/AddPatientForm"
+import { useRouter } from "next/navigation"
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState([])
@@ -14,6 +15,7 @@ export default function PatientsPage() {
   const [sortDirection, setSortDirection] = useState("asc")
   const [selectedGender, setSelectedGender] = useState("all")
   const [selectedObjective, setSelectedObjective] = useState("all")
+  const router = useRouter();
 
   useEffect(() => {
     loadPatients()
@@ -222,10 +224,7 @@ export default function PatientsPage() {
                     <tr
                       key={patient._id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        // Handle patient click - navigate to patient details
-                        console.log("Navigate to patient:", patient._id)
-                      }}
+                      onClick={() => router.push(`/patients/${patient._id}`)}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center">

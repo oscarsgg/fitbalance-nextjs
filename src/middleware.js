@@ -8,7 +8,8 @@ export function middleware(request) {
   // Define protected routes
   const protectedRoutes = ["/dashboard"]
   const authRoutes = ["/login", "/register"]
-
+  // Add more protected routes
+  protectedRoutes.push("/schedule", "/patients", "/appointments")
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
   const isAuthRoute = authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
@@ -36,5 +37,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/login", "/register", "/schedule/:path*", "/patients/:path*", "/appointments/:path*"],
 }

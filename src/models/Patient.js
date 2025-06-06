@@ -136,6 +136,38 @@ export class Patient {
     }
   }
 
+  // Update patient by ID
+  static async update(id, updateData) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
+
+      const result = await db.collection("Patients").updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateData }
+      )
+
+      return result.modifiedCount > 0
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Delete patient by ID
+  static async delete(id) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
+
+      const result = await db.collection("Patients").deleteOne({ _id: new ObjectId(id) })
+
+      return result.deletedCount > 0
+    } catch (error) {
+      throw error
+    }
+  }
+
+
   // Find patient by ID
   static async findById(id) {
     try {
