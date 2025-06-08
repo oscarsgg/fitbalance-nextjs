@@ -49,7 +49,7 @@ const Hero = () => {
                                 <div>
                                 <button
                                     onClick={() => router.push('/register')}
-                                    className="mt-6 px-6 py-3 bg-green-700/45 hover:bg-green-700 text-white text-sm font-semibold rounded-md transition duration-300"
+                                    className="mt-6 px-6 py-3 bg-[#9ed18a] hover:bg-[#8cbd78] text-white text-sm font-semibold rounded-md transition duration-300"
                                 >
                                     Register now!
                                 </button>

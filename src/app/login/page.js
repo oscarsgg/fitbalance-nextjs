@@ -63,29 +63,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-r from-[#b2e29f] to-[#e2ffd4]  flex flex-col justify-center py-5 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Back to home */}
-        <Link href="/" className="flex items-center text-green-600 hover:text-green-700 mb-6">
+        <Link href="/" className="mx-5 flex items-center text-green-600 hover:text-green-100 duration-500 mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to home
         </Link>
-
-        {/* Logo */}
-        <div className="flex justify-center">
-          <div className="flex items-center">
-            <Scale className="h-8 w-8 text-green-600" />
-            <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Sign in to your account</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">Access your FitBalance dashboard</p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mx-5 px-5 mt-2 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Logo */}
+          <div className="flex justify-center">
+            <div className="flex items-center">
+              <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2" />
+              <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
+            </div>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Sign in to your account</h2>
+          <p className="mt-2 text-center text-sm text-gray-600">Access your FitBalance dashboard</p>
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
+            <div className="my-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
           )}
 
           {successMessage && (
@@ -95,7 +94,7 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+            <div className="mt-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>

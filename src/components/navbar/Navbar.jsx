@@ -4,7 +4,7 @@ import Link from 'next/link'; // Necesario si usas Next.js
 
 export const Navbar = () => {
   return (
-    <nav className="absolute top-0 left-0 w-full pt-4 pb-4 z-20 bg-green-700/25 backdrop-blur-sm text-gray-700 rounded-b-xl">
+    <nav className="absolute top-0 left-0 w-full pt-4 pb-4 z-20 bg-[#b2e29f] backdrop-blur-sm text-gray-700 rounded-b-xl">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-8">
         <div className="flex items-center justify-between">
           {/* Logo + Brand */}

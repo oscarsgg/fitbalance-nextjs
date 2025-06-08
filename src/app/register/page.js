@@ -77,34 +77,33 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-r from-[#b2e29f] to-[#e2ffd4] flex flex-col justify-center py-5 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Back to home */}
-        <Link href="/" className="flex items-center text-green-600 hover:text-green-700 mb-6">
+        <Link href="/" className="flex items-center text-green-600 hover:text-green-100 duration-500 mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to home
         </Link>
-
-        {/* Logo */}
-        <div className="flex justify-center">
-          <div className="flex items-center">
-            <Scale className="h-8 w-8 text-green-600" />
-            <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Create your nutritionist account</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Join FitBalance and start managing your nutritional practice
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-2 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Logo */}
+            <div className="flex justify-center">
+              <div className="flex items-center">
+                <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2" />
+                <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
+              </div>
+            </div>
+          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Create your nutritionist account</h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Join FitBalance and start managing your nutritional practice
+          </p>
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
+            <div className="my-5 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 mt-7.5">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Full Name *
@@ -118,7 +117,7 @@ export default function RegisterPage() {
                   value={formData.name}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                  placeholder="Dr. John Smith"
+                  placeholder="Dr. Ramirez de la Peña"
                 />
               </div>
             </div>
@@ -136,24 +135,33 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                  placeholder="your@email.com"
+                  placeholder="example@gmail.com"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number
+                Phone Number (10 digits) *
               </label>
               <div className="mt-1">
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
+                  pattern="\d{10}"
+                  inputMode="numeric"
+                  maxLength={10}
+                  minLength={10}
+                  required
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={e => {
+                    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setFormData({ ...formData, phone: value });
+                    setError("");
+                  }}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="6641234567"
                 />
               </div>
             </div>

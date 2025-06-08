@@ -1,82 +1,92 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import Sidebar from '@/components/layout/Sidebar'
 import { X } from "lucide-react"
-import Sidebar from "../../components/layout/Sidebar"
+import { useSearchParams } from "next/navigation"
+
+import KPIMain from "../../components/dashboard/KPIMain"
+import UsefulCards from "../../components/dashboard/UsefulCards"
+import CoolGraphs from "../../components/dashboard/CoolGraphs"
+
+// Delete
 import DashboardStats from "../../components/dashboard/DashboardStats"
 import RecentActivity from "../../components/dashboard/RecentActivity"
 import QuickActions from "../../components/dashboard/QuickActions"
 import UpcomingAppointments from "../../components/dashboard/UpcomingAppointments"
 import AddPatientForm from "../../components/patients/AddPatientForm"
 
-export default function Dashboard() {
+export default function page() {
   const [nutritionist, setNutritionist] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [successMessage, setSuccessMessage] = useState("")
-  const searchParams = useSearchParams()
-  const [showAddPatient, setShowAddPatient] = useState(false)
-
-  useEffect(() => {
-    // Check for success message from registration
-    const message = searchParams.get("message")
-    if (message) {
-      setSuccessMessage(message)
-      // Auto-hide message after 5 seconds
-      setTimeout(() => {
-        setSuccessMessage("")
-      }, 5000)
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    // Fetch nutritionist data
-    const loadNutritionistData = async () => {
-      try {
-        const response = await fetch("/api/nutritionist/me")
-        if (response.ok) {
-          const data = await response.json()
-          setNutritionist(data.nutritionist)
-        } else {
-          // If can't fetch data, set default
-          setNutritionist({ name: "Doctor" })
-        }
-      } catch (error) {
-        console.error("Error loading nutritionist data:", error)
-        setNutritionist({ name: "Doctor" })
-      } finally {
-        setLoading(false)
+    const [loading, setLoading] = useState(true)
+    const [successMessage, setSuccessMessage] = useState("")
+    const searchParams = useSearchParams()
+    const [showAddPatient,   setShowAddPatient] = useState(false)
+  
+    useEffect(() => {
+      // Check for success message from registration
+      const message = searchParams.get("message")
+      if (message) {
+        setSuccessMessage(message)
+        // Auto-hide message after 5 seconds
+        setTimeout(() => {
+          setSuccessMessage("")
+        }, 5000)
       }
+    }, [searchParams])
+  
+    useEffect(() => {
+      // Fetch nutritionist data
+      const loadNutritionistData = async () => {
+        try {
+          const response = await fetch("/api/nutritionist/me")
+          if (response.ok) {
+            const data = await response.json()
+            setNutritionist(data.nutritionist)
+          } else {
+            // If can't fetch data, set default
+            setNutritionist({ name: "Doctor" })
+          }
+        } catch (error) {
+          console.error("Error loading nutritionist data:", error)
+          setNutritionist({ name: "Doctor" })
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      loadNutritionistData()
+    }, [])
+  
+    const handlePatientSuccess = (patient) => {
+      setShowAddPatient(false)
+      // You could refresh patient list here if needed
+      console.log("Patient created:", patient)
     }
-
-    loadNutritionistData()
-  }, [])
-
-  const handlePatientSuccess = (patient) => {
-    setShowAddPatient(false)
-    // You could refresh patient list here if needed
-    console.log("Patient created:", patient)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading dashboard...</p>
+  
+    if (loading) {
+      return (
+        <div className="flex h-screen bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
+          <Sidebar />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading dashboard...</p>
+            </div>
           </div>
         </div>
-      </div>
-    )
-  }
+      )
+    }
 
-  return (
-    <div className="flex h-screen bg-gray-50">
+    return (
+  <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+    {/* Contenido desplazable */}
+    <div className="flex-1 overflow-y-auto">
+      <div className="m-5 bg-white/65 rounded-xl min-h-screen">
+        {/* Aquí sigue tu contenido actual */}
+        
         {/* Success Message */}
         {successMessage && (
           <div className="bg-green-50 border-l-4 border-green-400 p-4 relative">
@@ -103,16 +113,20 @@ export default function Dashboard() {
         )}
 
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
+        <header className="pt-7 pb-4 px-7">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {nutritionist?.name || "Doctor"}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-700">
+                Dashboard
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-gray-700">
+                Welcome back, {nutritionist?.name || "Doctor"}
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowAddPatient(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                className="bg-gradient-to-br from-green-300 to-teal-400 text-white px-4 py-2 rounded-md hover:bg-green-700/88 transition-colors text-sm sm:text-base"
               >
                 Add New Patient
               </button>
@@ -120,29 +134,32 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Stats Grid */}
-            <DashboardStats />
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              {/* Left Column - Recent Activity */}
+        {/* Main */}
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* 4 KPI top */}
+            <KPIMain />
+
+            {/* Cards */}
+            <UsefulCards />
+
+            {/* Cool graphs */}
+            <CoolGraphs />
+            
+            {/* not today */}
+            {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
               <div className="lg:col-span-2">
                 <RecentActivity />
               </div>
-
-              {/* Right Column - Quick Actions & Appointments */}
               <div className="space-y-6">
                 <QuickActions />
                 <UpcomingAppointments />
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
 
-        {/* Add Patient Modal */}
         <AddPatientForm
           isOpen={showAddPatient}
           onClose={() => setShowAddPatient(false)}
@@ -150,5 +167,7 @@ export default function Dashboard() {
         />
       </div>
     </div>
-  )
+  </div>
+)
+
 }
