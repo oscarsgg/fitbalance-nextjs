@@ -16,7 +16,7 @@ import QuickActions from "../../components/dashboard/QuickActions"
 import UpcomingAppointments from "../../components/dashboard/UpcomingAppointments"
 import AddPatientForm from "../../components/patients/AddPatientForm"
 
-export default function page() {
+export default function Page() {
   const [nutritionist, setNutritionist] = useState(null)
     const [loading, setLoading] = useState(true)
     const [successMessage, setSuccessMessage] = useState("")
