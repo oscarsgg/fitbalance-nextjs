@@ -76,15 +76,15 @@ const data = [
       />
     ),
   },
-  {
-    title: "exampleKPI3",
-    total: "20,000",
-    icon: (
-      <ChevronDown
-        className="w-10 h-10 text-white"
-      />
-    ),
-  },
+  // {
+  //   title: "exampleKPI3",
+  //   total: "20,000",
+  //   icon: (
+  //     <ChevronDown
+  //       className="w-10 h-10 text-white"
+  //     />
+  //   ),
+  // },
 ];
 
 function KPIMain() {
@@ -123,7 +123,7 @@ function KPIMain() {
           </Menu>
         </div>
       </div> */}
-      <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 items-center md:gap-2.5 gap-4">
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 items-center md:gap-2.5 gap-4">
         {data.map((props, key) => (
           <KpiCard key={key} {...(props)} />
         ))}

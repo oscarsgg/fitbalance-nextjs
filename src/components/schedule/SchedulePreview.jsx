@@ -137,7 +137,7 @@ export default function SchedulePreview() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Working Days */}
-      <div className="bg-blue-50 rounded-lg p-4">
+      <div className="bg-blue-50 shadow-sm rounded-lg p-4">
         <div className="flex items-center mb-2">
           <Calendar className="h-5 w-5 text-blue-600" />
           <h4 className="ml-2 font-medium text-blue-800">Working Days</h4>
@@ -147,7 +147,7 @@ export default function SchedulePreview() {
       </div>
 
       {/* Working Hours */}
-      <div className="bg-green-50 rounded-lg p-4">
+      <div className="bg-green-50 shadow-sm rounded-lg p-4">
         <div className="flex items-center mb-2">
           <Clock className="h-5 w-5 text-green-600" />
           <h4 className="ml-2 font-medium text-green-800">Working Hours</h4>
@@ -161,7 +161,7 @@ export default function SchedulePreview() {
       </div>
 
       {/* Daily Capacity */}
-      <div className="bg-purple-50 rounded-lg p-4">
+      <div className="bg-purple-50 shadow-sm rounded-lg p-4">
         <div className="flex items-center mb-2">
           <Users className="h-5 w-5 text-purple-600" />
           <h4 className="ml-2 font-medium text-purple-800">Daily Capacity</h4>
@@ -171,7 +171,7 @@ export default function SchedulePreview() {
       </div>
 
       {/* Today's Status */}
-      <div className="bg-orange-50 rounded-lg p-4">
+      <div className="bg-orange-50 shadow-sm rounded-lg p-4">
         <div className="flex items-center mb-2">
           <Settings className="h-5 w-5 text-orange-600" />
           <h4 className="ml-2 font-medium text-orange-800">Today's Status</h4>

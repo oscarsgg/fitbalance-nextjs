@@ -256,8 +256,8 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-              <User className="h-5 w-5 text-green-600" />
+            <div className="w-10 h-10 bg-gradient-to-br from-green-300 to-teal-400 rounded-lg flex items-center justify-center mr-3">
+              <User className="h-6 w-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Add New Patient</h2>
@@ -494,7 +494,7 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
           </form>
         </div>
 
-        {/* Footer - Fixed at bottom */}
+        {/* Footer  */}
         <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
           <button
             type="button"
@@ -507,7 +507,7 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
             type="submit"
             disabled={isLoading}
             onClick={handleSubmit}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-6 py-2 bg-gradient-to-br from-green-400 to-teal-500 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isLoading ? (
               <>

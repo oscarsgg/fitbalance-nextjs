@@ -38,7 +38,7 @@ export default function AvailableSlotsPreview({ selectedDate }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white/75 rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <Clock className="h-5 w-5 text-blue-600 mr-2" />
