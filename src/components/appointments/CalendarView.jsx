@@ -31,14 +31,18 @@ export default function CalendarView({ appointments, selectedDate, onDateChange,
   const appointmentsByDate = useMemo(() => {
     const grouped = {}
     appointments.forEach((appointment) => {
-      const date = appointment.appointment_date
-      if (!grouped[date]) {
-        grouped[date] = []
+      // Convertimos appointment_date a Date y luego a string ISO (solo fecha)
+      const dateObj = new Date(appointment.appointment_date)
+      const dateKey = dateObj.toISOString().split("T")[0] // "2025-06-17"
+      
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = []
       }
-      grouped[date].push(appointment)
+      grouped[dateKey].push(appointment)
     })
     return grouped
   }, [appointments])
+
 
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))

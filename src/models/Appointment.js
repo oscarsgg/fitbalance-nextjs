@@ -8,14 +8,14 @@ export class Appointment {
     this.patient_name = data.patient_name // For new patients or display
     this.patient_email = data.patient_email || null
     this.patient_phone = data.patient_phone || null
-    this.appointment_date = data.appointment_date // ISO string
+    this.appointment_date = new Date(data.appointment_date) // ISO string
     this.appointment_time = data.appointment_time // "HH:MM" format
     this.duration_minutes = data.duration_minutes || 60
     this.appointment_type = data.appointment_type // "initial", "follow_up", "consultation"
     this.status = data.status || "scheduled" // "scheduled", "completed", "cancelled", "no_show"
     this.notes = data.notes || ""
-    this.created_at = data.created_at || new Date().toISOString()
-    this.updated_at = data.updated_at || new Date().toISOString()
+    this.created_at = data.created_at ? new Date(data.created_at) : new Date()
+    this.updated_at = data.updated_at ? new Date(data.updated_at) : new Date()
   }
 
   // Create new appointment
@@ -131,8 +131,16 @@ export class Appointment {
         }
         console.log("Filtro de rango de fechas:", filters.startDate, "a", filters.endDate)
       } else if (filters.date) {
-        query.appointment_date = filters.date
-        console.log("Filtro de fecha específica:", filters.date)
+        const start = new Date(filters.date)
+        const end = new Date(filters.date)
+        end.setDate(end.getDate() + 1)
+
+        query.appointment_date = {
+          $gte: start,
+          $lt: end,
+        }
+
+        console.log("Filtro de fecha específica como rango:", start.toISOString(), "a", end.toISOString())
       }
 
       // Add status filter if provided

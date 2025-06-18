@@ -32,7 +32,7 @@ export default function PatientDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -43,7 +43,7 @@ export default function PatientDetailsPage() {
 
   if (!patient) {
     return (
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -58,118 +58,166 @@ export default function PatientDetailsPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Link
-                href="/patients"
-                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5 text-gray-500" />
-              </Link>
+      <div className="flex-1 overflow-y-auto">
+        <div className="m-5 bg-white/65 rounded-xl min-h-screen">
+          {/* Header */}
+          <header className="pt-7 pb-2 px-7">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <User className="h-8 w-8 text-green-600 mr-3" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
-                  <p className="text-gray-600">Patient Details</p>
+                <Link
+                  href="/patients"
+                  className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-gray-500" />
+                </Link>
+                <div className="flex items-center">
+                  <User className="h-8 w-8 text-green-600 mr-3" />
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
+                    <p className="text-gray-600">Patient Details</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Patient Info Card */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h3>
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Patient Info Card */}
+                <div className="lg:col-span-1">
+                  {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h3>
 
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium">{patient.email}</p>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="font-medium">{patient.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Phone</p>
+                        <p className="font-medium">{patient.phone || "Not provided"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Age</p>
+                        <p className="font-medium">{patient.age} years</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Gender</p>
+                        <p className="font-medium capitalize">{patient.gender}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Height</p>
+                        <p className="font-medium">{patient.height_cm} cm</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Weight</p>
+                        <p className="font-medium">{patient.weight_kg} kg</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">BMI</p>
+                        <p className="font-medium">
+                          {((patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Health Objective</p>
+                        <p className="font-medium capitalize">{patient.objective}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Phone</p>
-                      <p className="font-medium">{patient.phone || "Not provided"}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Age</p>
-                      <p className="font-medium">{patient.age} years</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Gender</p>
-                      <p className="font-medium capitalize">{patient.gender}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Height</p>
-                      <p className="font-medium">{patient.height_cm} cm</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Weight</p>
-                      <p className="font-medium">{patient.weight_kg} kg</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">BMI</p>
-                      <p className="font-medium">
-                        {((patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1))}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Health Objective</p>
-                      <p className="font-medium capitalize">{patient.objective}</p>
+
+                    {patient.allergies?.length > 0 && (
+                      <div className="mt-6">
+                        <p className="text-sm text-gray-500 mb-2">Allergies</p>
+                        <div className="flex flex-wrap gap-2">
+                          {patient.allergies.map((allergy, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-red-50 text-red-700 rounded-full text-sm"
+                            >
+                              {allergy}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {patient.dietary_restrictions?.length > 0 && (
+                      <div className="mt-6">
+                        <p className="text-sm text-gray-500 mb-2">Dietary Restrictions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {patient.dietary_restrictions.map((restriction, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
+                            >
+                              {restriction}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div> */}
+
+                  {/* Improved profile card */}
+                  <div>
+                    <div className="bg-white/60 rounded-lg  border border-gray-200 px-4 pt-8 pb-10 shadow-lg">
+                      <div className="relative mx-auto w-36 rounded-full">
+                        <span className="absolute right-0 m-3 h-3 w-3 rounded-full bg-green-500 ring-2 ring-green-300 ring-offset-2"></span>
+                        <img className="mx-auto h-auto w-full rounded-full" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80" alt="" />
+                      </div>
+                      <h1 className="my-1 text-center text-xl font-bold leading-8 text-gray-900">{patient.name}</h1>
+                      <h3 className="font-lg text-semibold text-center leading-6 text-gray-600">{patient.phone || "Not provided"}</h3>
+                      <p className="text-center text-sm leading-6 text-gray-500 hover:text-gray-600">{patient.email}</p>
+                      <ul className="mt-3 divide-y rounded bg-green-200/50 py-2 px-3 text-gray-600 shadow-sm hover:text-gray-700 hover:shadow">
+                        {/* <li className="flex items-center py-3 text-sm">
+                          <span>Status</span>
+                          <span className="ml-auto"><span className="rounded-full bg-green-200 py-1 px-2 text-xs font-medium text-green-700">Open for side gigs</span></span>
+                        </li> */}
+                        <li className="flex items-center py-3 text-sm">
+                          <span>Gender</span>
+                          <span className="ml-auto capitalize">{patient.gender}</span>
+                        </li>
+                        <li className="flex items-center py-3 text-sm">
+                          <span>Age</span>
+                          <span className="ml-auto capitalize">{patient.age} years</span>
+                        </li>
+                        <li className="flex items-center py-3 text-sm">
+                          <span>Health objective</span>
+                          <span className="ml-auto capitalize">{patient.objective}</span>
+                        </li>
+                        <li className="flex items-center py-3 text-sm">
+                          <span>Height</span>
+                          <span className="ml-auto capitalize">{patient.height_cm} cm</span>
+                        </li>
+                        <li className="flex items-center py-3 text-sm">
+                          <span>Weight</span>
+                          <span className="ml-auto capitalize">{patient.weight_kg} kg</span>
+                        </li>
+                        <li className="flex items-center py-3 text-sm">
+                          <span>BMI</span>
+                          <span className="ml-auto capitalize">
+                            {((patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1))}
+                          </span>
+                        </li>
+                      </ul>
                     </div>
                   </div>
 
-                  {patient.allergies?.length > 0 && (
-                    <div className="mt-6">
-                      <p className="text-sm text-gray-500 mb-2">Allergies</p>
-                      <div className="flex flex-wrap gap-2">
-                        {patient.allergies.map((allergy, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-red-50 text-red-700 rounded-full text-sm"
-                          >
-                            {allergy}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                </div>
 
-                  {patient.dietary_restrictions?.length > 0 && (
-                    <div className="mt-6">
-                      <p className="text-sm text-gray-500 mb-2">Dietary Restrictions</p>
-                      <div className="flex flex-wrap gap-2">
-                        {patient.dietary_restrictions.map((restriction, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
-                          >
-                            {restriction}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                {/* Diet Management */}
+                <div className="lg:col-span-2">
+                  <DietManagement patientId={id} />
                 </div>
               </div>
-
-              {/* Diet Management */}
-              <div className="lg:col-span-2">
-                <DietManagement patientId={id} />
-              </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   )

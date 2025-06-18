@@ -120,15 +120,19 @@ export async function GET(request) {
 
     // Build filters
     const filters = {}
+
     if (startDate && endDate) {
-      filters.startDate = startDate
-      filters.endDate = endDate
+      filters.startDate = new Date(startDate)
+      filters.endDate = new Date(endDate)
     } else if (date) {
-      filters.date = date
+      // Este es el más importante para los clics en el calendario
+      filters.date = new Date(date)
     }
+
     if (status) {
       filters.status = status
     }
+
 
     // Get appointments
     const appointments = await Appointment.findByNutritionist(decoded.nutritionistId, filters)

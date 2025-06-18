@@ -16,8 +16,8 @@ export class NutritionistSchedule {
     }
     this.appointment_duration = data.appointment_duration || 60 // minutes
     this.buffer_time = data.buffer_time || 15 // minutes between appointments
-    this.created_at = data.created_at || new Date().toISOString()
-    this.updated_at = data.updated_at || new Date().toISOString()
+    this.created_at = data.created_at ? new Date(data.created_at) : new Date()
+    this.updated_at = data.updated_at ? new Date(data.updated_at) : new Date()
   }
 
   // Create or update schedule

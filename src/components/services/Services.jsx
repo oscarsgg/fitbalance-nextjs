@@ -72,7 +72,7 @@ const Services = () => {
                     delay: 0.2
                 }}
                 
-                className='mt-7 text-3xl font-bold text-gray-800'>
+                className='mt-13 text-3xl font-bold text-gray-800'>
                 Manage patients <span className='text-green-600'>
                     with ease
                 </span>
@@ -123,7 +123,7 @@ const Services = () => {
             stiffness: 100, 
             damping: 10,
         }}
-        className='my-14'>
+        className='my-18'>
             <div style={BannerStyle}
             className='aspect-[1200/628] w-full max-w-5xl mx-auto rounded-xl overflow-hidden drop-shadow-lg'>
 
