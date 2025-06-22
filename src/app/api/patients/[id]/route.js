@@ -5,6 +5,9 @@ import { ObjectId } from "mongodb"
 
 export async function GET(request, { params }) {
   try {
+    // Await params for Next.js 15 compatibility
+    const { id } = await params
+    
     // Get token from cookies
     const token = request.cookies.get("token")?.value
 
@@ -16,7 +19,7 @@ export async function GET(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
 
     // Get patient data
-    const patient = await Patient.findById(params.id)
+    const patient = await Patient.findById(id)
 
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 })
@@ -36,6 +39,9 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    // Await params for Next.js 15 compatibility
+    const { id } = await params
+    
     const token = request.cookies.get("token")?.value
 
     if (!token) {
@@ -46,7 +52,7 @@ export async function PUT(request, { params }) {
     const body = await request.json()
 
     // Get current patient to verify ownership
-    const currentPatient = await Patient.findById(params.id)
+    const currentPatient = await Patient.findById(id)
 
     if (!currentPatient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 })
@@ -57,7 +63,7 @@ export async function PUT(request, { params }) {
     }
 
     // Update patient
-    const updated = await Patient.update(params.id, body)
+    const updated = await Patient.update(id, body)
 
     if (!updated) {
       return NextResponse.json({ error: "Failed to update patient" }, { status: 400 })
@@ -72,6 +78,9 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    // Await params for Next.js 15 compatibility
+    const { id } = await params
+    
     const token = request.cookies.get("token")?.value
 
     if (!token) {
@@ -81,7 +90,7 @@ export async function DELETE(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
 
     // Get current patient to verify ownership
-    const currentPatient = await Patient.findById(params.id)
+    const currentPatient = await Patient.findById(id)
 
     if (!currentPatient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 })
@@ -92,7 +101,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete patient
-    const deleted = await Patient.delete(params.id)
+    const deleted = await Patient.delete(id)
 
     if (!deleted) {
       return NextResponse.json({ error: "Failed to delete patient" }, { status: 400 })
