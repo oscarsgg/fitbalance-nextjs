@@ -67,10 +67,7 @@ export default function PatientDetailsPage() {
           <header className="pt-7 pb-2 px-7">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Link
-                  href="/patients"
-                  className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <Link href="/patients" className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   <ArrowLeft className="h-5 w-5 text-gray-500" />
                 </Link>
                 <div className="flex items-center">
@@ -90,75 +87,165 @@ export default function PatientDetailsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Patient Info Card */}
                 <div className="lg:col-span-1">
-                  <div className="bg-white/60 rounded-lg border border-gray-200 px-4 pt-8 pb-10 shadow-lg">
-                    <div className="relative mx-auto w-36 rounded-full">
-                      <span className="absolute right-0 m-3 h-3 w-3 rounded-full bg-green-500 ring-2 ring-green-300 ring-offset-2"></span>
-                      <img className="mx-auto h-auto w-full rounded-full" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80" alt="" />
+                  {/* Professional Patient Profile Card */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Header with gradient */}
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-white">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <img
+                            className="h-20 w-20 rounded-full border-4 border-white shadow-lg object-cover"
+                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
+                            alt={patient.name}
+                          />
+                          <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-400 border-2 border-white rounded-full flex items-center justify-center">
+                            <div className="h-2 w-2 bg-white rounded-full"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold">{patient.name}</h2>
+                          <p className="text-green-100 text-sm">ID: #{patient._id?.slice(-6) || "N/A"}</p>
+                          <p className="text-green-100 text-sm mt-1">{patient.email}</p>
+                        </div>
+                      </div>
                     </div>
-                    <h1 className="my-1 text-center text-xl font-bold leading-8 text-gray-900">{patient.name}</h1>
-                    <h3 className="font-lg text-semibold text-center leading-6 text-gray-600">{patient.phone || "Not provided"}</h3>
-                    <p className="text-center text-sm leading-6 text-gray-500 hover:text-gray-600">{patient.email}</p>
-                    <ul className="mt-3 divide-y rounded bg-green-200/50 py-2 px-3 text-gray-600 shadow-sm hover:text-gray-700 hover:shadow">
-                      <li className="flex items-center py-3 text-sm">
-                        <span>Gender</span>
-                        <span className="ml-auto capitalize">{patient.gender}</span>
-                      </li>
-                      <li className="flex items-center py-3 text-sm">
-                        <span>Age</span>
-                        <span className="ml-auto capitalize">{patient.age} years</span>
-                      </li>
-                      <li className="flex items-center py-3 text-sm">
-                        <span>Health objective</span>
-                        <span className="ml-auto capitalize">{patient.objective}</span>
-                      </li>
-                      <li className="flex items-center py-3 text-sm">
-                        <span>Height</span>
-                        <span className="ml-auto capitalize">{patient.height_cm} cm</span>
-                      </li>
-                      <li className="flex items-center py-3 text-sm">
-                        <span>Weight</span>
-                        <span className="ml-auto capitalize">{patient.weight_kg} kg</span>
-                      </li>
-                      <li className="flex items-center py-3 text-sm">
-                        <span>BMI</span>
-                        <span className="ml-auto capitalize">
-                          {((patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1))}
-                        </span>
-                      </li>
-                    </ul>
 
-                    {/* Allergies and restrictions */}
-                    {patient.allergies?.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-500 mb-2">Allergies</p>
-                        <div className="flex flex-wrap gap-2">
-                          {patient.allergies.map((allergy, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-red-50 text-red-700 rounded-full text-xs"
-                            >
-                              {allergy}
-                            </span>
-                          ))}
+                    {/* Patient Information */}
+                    <div className="p-6">
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-500 font-medium">Edad</p>
+                              <p className="text-2xl font-bold text-gray-900">{patient.age}</p>
+                              <p className="text-xs text-gray-400">años</p>
+                            </div>
+                            <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                              <svg
+                                className="h-6 w-6 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-500 font-medium">IMC</p>
+                              <p className="text-2xl font-bold text-gray-900">
+                                {(patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1)}
+                              </p>
+                              <p className="text-xs text-gray-400">kg/m²</p>
+                            </div>
+                            <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <svg
+                                className="h-6 w-6 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
 
-                    {patient.dietary_restrictions?.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-500 mb-2">Dietary Restrictions</p>
-                        <div className="flex flex-wrap gap-2">
-                          {patient.dietary_restrictions.map((restriction, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-xs"
-                            >
-                              {restriction}
-                            </span>
-                          ))}
+                      {/* Detailed Info */}
+                      <div className="space-y-4">
+                        <div className="border-l-4 border-green-500 pl-4">
+                          <h3 className="font-semibold text-gray-900 mb-3">Información Personal</h3>
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-gray-600">Género:</span>
+                              <span className="font-medium capitalize">{patient.gender}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-gray-600">Teléfono:</span>
+                              <span className="font-medium">{patient.phone || "No proporcionado"}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-gray-600">Altura:</span>
+                              <span className="font-medium">{patient.height_cm} cm</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-gray-600">Peso:</span>
+                              <span className="font-medium">{patient.weight_kg} kg</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border-l-4 border-blue-500 pl-4">
+                          <h3 className="font-semibold text-gray-900 mb-3">Objetivo de Salud</h3>
+                          <div className="bg-blue-50 rounded-lg p-3">
+                            <p className="text-blue-800 font-medium capitalize">{patient.objective}</p>
+                          </div>
+                        </div>
+
+                        {/* Allergies and Restrictions */}
+                        {(patient.allergies?.length > 0 || patient.dietary_restrictions?.length > 0) && (
+                          <div className="border-l-4 border-red-500 pl-4">
+                            <h3 className="font-semibold text-gray-900 mb-3">Restricciones Médicas</h3>
+
+                            {patient.allergies?.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm text-gray-600 mb-2">Alergias:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {patient.allergies.map((allergy, index) => (
+                                    <span
+                                      key={index}
+                                      className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium"
+                                    >
+                                      {allergy}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {patient.dietary_restrictions?.length > 0 && (
+                              <div>
+                                <p className="text-sm text-gray-600 mb-2">Restricciones Dietéticas:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {patient.dietary_restrictions.map((restriction, index) => (
+                                    <span
+                                      key={index}
+                                      className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium"
+                                    >
+                                      {restriction}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="mt-6 pt-4 border-t border-gray-200">
+                        <div className="flex space-x-3">
+                          <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                            Ver Historial
+                          </button>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
 
