@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 import { Appointment } from "@/models/Appointment"
 
-export async function GET() {
+// GET: Obtener la próxima cita
+export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const tokenCookie = cookieStore.get("token")
+    // Leer la cookie desde el request (funciona bien en producción)
+    const token = request.cookies.get("token")?.value
 
-    if (!tokenCookie) {
+    if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
     let decoded
     try {
-      decoded = jwt.verify(tokenCookie.value, process.env.JWT_SECRET)
+      decoded = jwt.verify(token, process.env.JWT_SECRET)
     } catch (err) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
     const nutritionistId = decoded.nutritionistId
 
+    // Función auxiliar para construir Date desde date y hora separadas
     function getAppointmentDateTimeLocal(appointment) {
-      const dateISO = appointment.appointment_date.toISOString().slice(0, 10) // "YYYY-MM-DD"
+      const dateISO = appointment.appointment_date.toISOString().slice(0, 10)
       const [year, month, day] = dateISO.split("-").map(Number)
       const [hours, minutes] = appointment.appointment_time.split(":").map(Number)
       return new Date(year, month - 1, day, hours, minutes)

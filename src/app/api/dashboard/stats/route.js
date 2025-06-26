@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 import { Patient } from "@/models/Patient"
 import { Appointment } from "@/models/Appointment"
 
-// Funciones para normalizar fechas a UTC
+// Helpers para normalizar fechas a UTC
 function startOfDayUTC(date) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
@@ -13,21 +12,25 @@ function endOfDayUTC(date) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999))
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get("token")
+    const token = request.cookies.get("token")?.value
 
     if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const decoded = jwt.verify(token.value, process.env.JWT_SECRET)
-    const nutritionistId = decoded.nutritionistId
+    let decoded
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET)
+    } catch (err) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    }
 
+    const nutritionistId = decoded.nutritionistId
     const now = new Date()
 
-    // Normalizar fechas a UTC
+    // Fechas normalizadas
     const todayStart = startOfDayUTC(now)
     const todayEnd = endOfDayUTC(now)
 
@@ -44,37 +47,34 @@ export async function GET() {
     const monthStart = startOfDayUTC(startOfMonth)
     const monthEnd = endOfDayUTC(endOfMonth)
 
-    // Total patients
+    // Consultas
     const totalPatients = await Patient.countByNutritionist(nutritionistId)
 
-    // Today's appointments
     const todayAppointments = await Appointment.findByNutritionist(nutritionistId, {
       startDate: todayStart,
       endDate: todayEnd,
     })
 
-    // This week's appointments
     const weekAppointments = await Appointment.findByNutritionist(nutritionistId, {
       startDate: weekStart,
       endDate: weekEnd,
     })
 
-    // This month's appointments
     const monthAppointments = await Appointment.findByNutritionist(nutritionistId, {
       startDate: monthStart,
       endDate: monthEnd,
     })
 
-    // Completed appointments this month
-    const completedAppointments = monthAppointments.filter((apt) => apt.status === "completed").length
+    const completedAppointments = monthAppointments.filter(
+      (apt) => apt.status === "completed",
+    ).length
 
-    // Response
+    // Construcción de respuesta
     const stats = {
       totalPatients,
       todayAppointments: todayAppointments.length,
       weekAppointments: weekAppointments.length,
       completedAppointments,
-      // Dummy values for now
       patientsChange: "+12%",
       todayChange: todayAppointments.length > 0 ? "+100%" : "0%",
       weekChange: weekAppointments.length > 5 ? "+20%" : weekAppointments.length > 0 ? "+10%" : "0%",

@@ -109,7 +109,7 @@ export default function Sidebar() {
 
                 <div className="border-t border-green-200 flex p-3">
                     <img
-                        src="https://cdn1.iconfinder.com/data/icons/prettyoffice8/256/User-green.png"
+                        src="/user.png"
                         alt="User Avatar"
                         className="w-10 h-10 rounded-full border border-green-600"
                     />

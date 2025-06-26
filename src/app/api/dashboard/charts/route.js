@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 import { Appointment } from "@/models/Appointment"
 import { Patient } from "@/models/Patient"
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get("token")
+    // ✅ Acceder a la cookie del token de forma compatible con Vercel
+    const token = request.cookies.get("token")?.value
 
     if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const decoded = jwt.verify(token.value, process.env.JWT_SECRET)
+    // ✅ Validar el token
+    let decoded
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET)
+    } catch (err) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    }
+
     const nutritionistId = decoded.nutritionistId
 
-    // Get data for the last 6 months
     const months = []
     const appointmentsData = []
     const patientsData = []
@@ -28,18 +33,17 @@ export async function GET() {
       const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
       const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0)
 
-      // Get month name
       const monthName = date.toLocaleDateString("en-US", { month: "short" })
       months.push(monthName)
 
-      // Get appointments for this month
+      // ✅ Obtener citas de ese mes
       const monthAppointments = await Appointment.findByNutritionist(nutritionistId, {
         startDate: monthStart,
         endDate: monthEnd,
       })
       appointmentsData.push(monthAppointments.length)
 
-      // Get patients created this month
+      // ✅ Obtener pacientes de ese mes
       const monthPatients = await Patient.findByNutritionist(nutritionistId, {
         createdAfter: monthStart,
         createdBefore: monthEnd,
