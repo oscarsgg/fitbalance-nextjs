@@ -88,7 +88,7 @@ export default function PatientDetailsPage() {
                 {/* Patient Info Card */}
                 <div className="lg:col-span-1">
                   {/* Professional Patient Profile Card */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="bg-white/63 rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     {/* Header with gradient */}
                     <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-white">
                       <div className="flex items-center space-x-4">
@@ -104,7 +104,7 @@ export default function PatientDetailsPage() {
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold">{patient.name}</h2>
-                          <p className="text-green-100 text-sm">ID: #{patient._id?.slice(-6) || "N/A"}</p>
+                          {/* <p className="text-green-100 text-sm">ID: #{patient._id?.slice(-6) || "N/A"}</p> */}
                           <p className="text-green-100 text-sm mt-1">{patient.email}</p>
                         </div>
                       </div>
@@ -113,12 +113,12 @@ export default function PatientDetailsPage() {
                     {/* Patient Information */}
                     <div className="p-6">
                       <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="bg-white/70 rounded-lg p-4 shadow-sm">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm text-gray-500 font-medium">Edad</p>
+                              <p className="text-sm text-gray-500 font-medium">Age</p>
                               <p className="text-2xl font-bold text-gray-900">{patient.age}</p>
-                              <p className="text-xs text-gray-400">años</p>
+                              <p className="text-xs text-gray-400">years old</p>
                             </div>
                             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
                               <svg
@@ -138,10 +138,10 @@ export default function PatientDetailsPage() {
                           </div>
                         </div>
 
-                        <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="bg-white/70 rounded-lg p-4 shadow-sm">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm text-gray-500 font-medium">IMC</p>
+                              <p className="text-sm text-gray-500 font-medium">BMI</p>
                               <p className="text-2xl font-bold text-gray-900">
                                 {(patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1)}
                               </p>
@@ -169,30 +169,30 @@ export default function PatientDetailsPage() {
                       {/* Detailed Info */}
                       <div className="space-y-4">
                         <div className="border-l-4 border-green-500 pl-4">
-                          <h3 className="font-semibold text-gray-900 mb-3">Información Personal</h3>
+                          <h3 className="font-semibold text-gray-900 mb-3">Personal information</h3>
                           <div className="grid grid-cols-1 gap-3">
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Género:</span>
+                              <span className="text-gray-600">Gender:</span>
                               <span className="font-medium capitalize">{patient.gender}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Teléfono:</span>
-                              <span className="font-medium">{patient.phone || "No proporcionado"}</span>
+                              <span className="text-gray-600">Phone:</span>
+                              <span className="font-medium">{patient.phone || "not provided"}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Altura:</span>
+                              <span className="text-gray-600">Height:</span>
                               <span className="font-medium">{patient.height_cm} cm</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Peso:</span>
+                              <span className="text-gray-600">Weight:</span>
                               <span className="font-medium">{patient.weight_kg} kg</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="border-l-4 border-blue-500 pl-4">
-                          <h3 className="font-semibold text-gray-900 mb-3">Objetivo de Salud</h3>
-                          <div className="bg-blue-50 rounded-lg p-3">
+                          <h3 className="font-semibold text-gray-900 mb-3">Patients objective</h3>
+                          <div className="bg-blue-50 rounded-lg p-3 shadow-sm">
                             <p className="text-blue-800 font-medium capitalize">{patient.objective}</p>
                           </div>
                         </div>
@@ -200,11 +200,11 @@ export default function PatientDetailsPage() {
                         {/* Allergies and Restrictions */}
                         {(patient.allergies?.length > 0 || patient.dietary_restrictions?.length > 0) && (
                           <div className="border-l-4 border-red-500 pl-4">
-                            <h3 className="font-semibold text-gray-900 mb-3">Restricciones Médicas</h3>
+                            <h3 className="font-semibold text-gray-900 mb-3">Medical restriction</h3>
 
                             {patient.allergies?.length > 0 && (
                               <div className="mb-3">
-                                <p className="text-sm text-gray-600 mb-2">Alergias:</p>
+                                <p className="text-sm text-gray-600 mb-2">Allergy:</p>
                                 <div className="flex flex-wrap gap-2">
                                   {patient.allergies.map((allergy, index) => (
                                     <span
@@ -220,7 +220,7 @@ export default function PatientDetailsPage() {
 
                             {patient.dietary_restrictions?.length > 0 && (
                               <div>
-                                <p className="text-sm text-gray-600 mb-2">Restricciones Dietéticas:</p>
+                                <p className="text-sm text-gray-600 mb-2">Dietary Restrictions:</p>
                                 <div className="flex flex-wrap gap-2">
                                   {patient.dietary_restrictions.map((restriction, index) => (
                                     <span
@@ -241,7 +241,7 @@ export default function PatientDetailsPage() {
                       <div className="mt-6 pt-4 border-t border-gray-200">
                         <div className="flex space-x-3">
                           <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            Ver Historial
+                            View history
                           </button>
                         </div>
                       </div>

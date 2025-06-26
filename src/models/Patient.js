@@ -16,10 +16,12 @@ export class Patient {
     this.objective = data.objective
     this.allergies = data.allergies || []
     this.dietary_restrictions = data.dietary_restrictions || []
-    this.registration_date = data.registration_date || new Date().toISOString()
+    this.registration_date = data.registration_date
+      ? new Date(data.registration_date)
+      : new Date() // ✅ fecha como Date real
     this.notes = data.notes || ""
     this.last_consultation = data.last_consultation || null
-    this.nutritionist_id = data.nutritionist_id // ID del nutriólogo que lo registró
+    this.nutritionist_id = data.nutritionist_id
     this.isActive = data.isActive !== undefined ? data.isActive : true
   }
 
@@ -114,23 +116,49 @@ export class Patient {
     }
   }
 
+  static async countByNutritionist(nutritionistId) {
+    try {
+      const client = await clientPromise;
+      const db = client.db("fitbalance");
+
+      const count = await db.collection("Patients").countDocuments({
+        nutritionist_id: new ObjectId(nutritionistId),
+      });
+
+      console.log("nutritionistId:", nutritionistId)
+
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // Find patients by nutritionist
-  static async findByNutritionist(nutritionistId) {
+  static async findByNutritionist(nutritionistId, { createdAfter, createdBefore } = {}) {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
+      // Construir el filtro base
+      const filter = {
+        nutritionist_id: new ObjectId(nutritionistId),
+      }
+
+      // Agregar filtros por fechas si están presentes
+      if (createdAfter || createdBefore) {
+        filter.registration_date = {}
+        if (createdAfter) filter.registration_date.$gte = createdAfter
+        if (createdBefore) filter.registration_date.$lte = createdBefore
+      }
+
       const patients = await db
         .collection("Patients")
-        .find({ nutritionist_id: new ObjectId(nutritionistId) })
+        .find(filter)
         .sort({ registration_date: -1 })
         .toArray()
 
-      // Remove passwords from results
-      return patients.map((patient) => {
-        const { password, ...patientWithoutPassword } = patient
-        return patientWithoutPassword
-      })
+      // Eliminar contraseñas
+      return patients.map(({ password, ...rest }) => rest)
     } catch (error) {
       throw error
     }

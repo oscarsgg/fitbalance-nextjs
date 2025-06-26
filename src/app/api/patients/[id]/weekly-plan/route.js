@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import { ObjectId } from "mongodb"
 import { WeeklyPlan } from "@/models/WeeklyPlan"
 import { Food } from "@/models/Food"
+import { enrichMealsWithFoodDetails } from "@/models/WeeklyPlan"
 
 function isValidObjectId(id) {
   return typeof id === "string" && /^[a-fA-F0-9]{24}$/.test(id)
@@ -24,11 +25,14 @@ export async function POST(request, { params }) {
 
     const processedData = {
       ...body,
-      patient_id: id
+      patient_id: id,
+      week_start: new Date(body.week_start),
     }
 
-    processedData.meals = WeeklyPlan.convertToStorageFormat(processedData)
-    
+    // ❌ NO vuelvas a convertir meals si ya vienen del frontend bien estructurados
+    // ✅ Ya están en formato correcto
+    // processedData.meals = WeeklyPlan.convertToStorageFormat(processedData)
+
     const plan = await WeeklyPlan.create(processedData)
 
     return NextResponse.json({
@@ -43,7 +47,7 @@ export async function POST(request, { params }) {
 
 export async function GET(request, { params }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     const token = request.cookies.get("token")?.value
     if (!token) {
@@ -58,6 +62,29 @@ export async function GET(request, { params }) {
       plan = await WeeklyPlan.findByPatientAndWeek(id, weekStart)
     } else {
       plan = await WeeklyPlan.findLatestByPatient(id)
+    }
+
+    if (plan && plan.meals) {
+      const enrichedMeals = await enrichMealsWithFoodDetails(plan.meals)
+
+      const formattedMeals = {
+        monday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        tuesday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        wednesday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        thursday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        friday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        saturday: { breakfast: [], lunch: [], dinner: [], snack: [] },
+        sunday: { breakfast: [], lunch: [], dinner: [], snack: [] }
+      }
+
+      for (const meal of enrichedMeals) {
+        const { day, type, foods } = meal
+        if (formattedMeals[day] && formattedMeals[day][type]) {
+          formattedMeals[day][type] = foods
+        }
+      }
+
+      plan.meals = formattedMeals
     }
 
     return NextResponse.json({ plan })

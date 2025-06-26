@@ -19,17 +19,14 @@ export class WeeklyPlan {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
-      // Convert patient_id to ObjectId if it's a string
       if (typeof planData.patient_id === "string") {
         planData.patient_id = new ObjectId(planData.patient_id)
       }
 
-      // Convert week_start to Date if it's a string
       if (typeof planData.week_start === "string") {
         planData.week_start = new Date(planData.week_start)
       }
 
-      // Ensure all required fields are present with proper types
       const processedData = {
         patient_id: planData.patient_id,
         week_start: planData.week_start,
@@ -37,21 +34,20 @@ export class WeeklyPlan {
         protein: Number(planData.protein) || 0,
         fat: Number(planData.fat) || 0,
         carbs: Number(planData.carbs) || 0,
-        meals: planData.meals || [],
+        meals: planData.meals.map(meal => ({
+          day: meal.day,
+          type: meal.type,
+          time: meal.time || "00:00",
+          foods: meal.foods
+            .filter(food => !!food.food_id)
+            .map(food => ({
+              food_id: food.food_id,
+              grams: parseInt(food.grams) || 100
+            }))
+        })),
         created_at: new Date(),
         updated_at: new Date()
       }
-
-      // Process meals array - ensure proper format
-      processedData.meals = processedData.meals.map(meal => ({
-        day: meal.day,
-        type: meal.type,
-        time: meal.time || "00:00",
-        foods: meal.foods.map(food => ({
-          food_id: food.food_id, // Keep as string per new schema
-          grams: parseInt(food.grams) || 100
-        }))
-      }))
 
       console.log("Processed data for MongoDB:", JSON.stringify(processedData, null, 2))
 
@@ -88,32 +84,27 @@ export class WeeklyPlan {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
-      // Process the update data similar to create
       const processedData = {
         dailyCalories: Number(updateData.dailyCalories) || 0,
         protein: Number(updateData.protein) || 0,
         fat: Number(updateData.fat) || 0,
         carbs: Number(updateData.carbs) || 0,
-        meals: updateData.meals || [],
-        updated_at: new Date()
-      }
-
-      // Convert week_start to Date if provided
-      if (updateData.week_start) {
-        processedData.week_start = new Date(updateData.week_start)
-      }
-
-      // Process meals array
-      if (updateData.meals) {
-        processedData.meals = updateData.meals.map(meal => ({
+        meals: updateData.meals.map(meal => ({
           day: meal.day,
           type: meal.type,
           time: meal.time || "00:00",
-          foods: meal.foods.map(food => ({
-            food_id: food.food_id, // Keep as string
-            grams: parseInt(food.grams) || 100
-          }))
-        }))
+          foods: meal.foods
+            .filter(food => !!food.food_id)
+            .map(food => ({
+              food_id: food.food_id,
+              grams: parseInt(food.grams) || 100
+            }))
+        })),
+        updated_at: new Date()
+      }
+
+      if (updateData.week_start) {
+        processedData.week_start = new Date(updateData.week_start)
       }
 
       const result = await db.collection("WeeklyPlan").updateOne(
@@ -145,9 +136,8 @@ export class WeeklyPlan {
     }
   }
 
-  // Helper method to convert from old format to new format for display
   static convertToDisplayFormat(plan) {
-    if (!plan || !plan.meals) return null
+    if (!plan || !plan.meals || !Array.isArray(plan.meals)) return null
 
     const displayFormat = {
       ...plan,
@@ -162,9 +152,11 @@ export class WeeklyPlan {
       }
     }
 
-    // Convert array format to nested object format for easier UI handling
     plan.meals.forEach(meal => {
-      if (displayFormat.meals[meal.day] && displayFormat.meals[meal.day][meal.type]) {
+      if (
+        displayFormat.meals[meal.day] &&
+        displayFormat.meals[meal.day][meal.type]
+      ) {
         displayFormat.meals[meal.day][meal.type] = meal.foods.map(food => ({
           food_id: food.food_id,
           grams: food.grams,
@@ -176,7 +168,6 @@ export class WeeklyPlan {
     return displayFormat
   }
 
-  // Helper method to convert from display format to storage format
   static convertToStorageFormat(displayPlan) {
     if (!displayPlan || !displayPlan.meals) return []
 
@@ -184,7 +175,6 @@ export class WeeklyPlan {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack']
 
-    // Default times for each meal type
     const defaultTimes = {
       breakfast: "08:00",
       lunch: "13:00",
@@ -211,4 +201,43 @@ export class WeeklyPlan {
 
     return meals
   }
+}
+
+export async function enrichMealsWithFoodDetails(meals) {
+  const client = await clientPromise
+  const db = client.db("fitbalance")
+
+  const foodIds = [
+    ...new Set(
+      meals.flatMap(meal =>
+        meal.foods.map(f => f.food_id)
+      )
+    )
+  ]
+
+  const objectIds = foodIds.map(id => /^[a-fA-F0-9]{24}$/.test(id) ? new ObjectId(id) : id)
+
+  const foodsData = await db.collection("Food")
+    .find({ _id: { $in: objectIds } })
+    .toArray()
+
+  const foodMap = {}
+  foodsData.forEach(food => {
+    foodMap[food._id.toString()] = food
+  })
+
+  const enriched = meals.map(meal => ({
+    ...meal,
+    foods: meal.foods.map(food => {
+      const data = foodMap[food.food_id.toString()]
+      return {
+        food_id: food.food_id,
+        food_name: data?.name || "Unknown Food",
+        grams: food.grams,
+        food_nutrients: data?.nutrients || null
+      }
+    })
+  }))
+
+  return enriched
 }
