@@ -91,7 +91,7 @@ export default function RegisterPage() {
           {/* Logo */}
             <div className="flex justify-center">
               <div className="flex items-center">
-                <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2" />
+                <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2 rounded-2xl " />
                 <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
               </div>
             </div>

@@ -77,7 +77,7 @@ export default function Sidebar() {
              <nav className="h-full flex flex-col bg-[#dfffd1] border-r border-green-200 shadow-sm">
                 <div className="p-4 pb-2 mb-3 flex justify-between items-center border-b border-green-200">
                     <img src="/logo1.png" alt="FB"
-                        className={`overflow-hidden transition-all rounded-full border border-green-600 ${expanded ? "w-12 " : "w-0" }`}
+                        className={`overflow-hidden transition-all rounded-full border-2 border-white ${expanded ? "w-12 " : "w-0" }`}
                     />
                     {expanded && <h1 className="text-xl font-bold text-gray-700">FitBalance</h1>}
                     <button onClick={() => setExpanded(curr => !curr)} className="p-1.5 rounded-lg bg-green-600/10 hover:bg-green-200">

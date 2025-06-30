@@ -196,7 +196,7 @@ export class Appointment {
 
       const updateData = {
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date(), // Mantener como Date, no string
       }
 
       if (notes !== null) {
