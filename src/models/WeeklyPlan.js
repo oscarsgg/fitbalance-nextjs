@@ -1,64 +1,48 @@
-import { ObjectId } from "mongodb"
 import clientPromise from "@/lib/mongodb"
+import { ObjectId } from "mongodb"
+import { Food } from "./Food"
 
 export class WeeklyPlan {
-  constructor(data) {
-    this.patient_id = data.patient_id
-    this.week_start = data.week_start
-    this.dailyCalories = data.dailyCalories || 0
-    this.protein = data.protein || 0
-    this.fat = data.fat || 0
-    this.carbs = data.carbs || 0
-    this.meals = data.meals || []
-    this.created_at = data.created_at || new Date()
-    this.updated_at = data.updated_at || new Date()
-  }
-
   static async create(planData) {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
+      const collection = db.collection("WeeklyPlan")
 
-      if (typeof planData.patient_id === "string") {
-        planData.patient_id = new ObjectId(planData.patient_id)
-      }
-
-      if (typeof planData.week_start === "string") {
-        planData.week_start = new Date(planData.week_start)
-      }
+      // Procesar meals para cumplir con el esquema
+      const processedMeals = planData.meals.map((meal) => ({
+        day: meal.day,
+        type: meal.type,
+        time: meal.time || "00:00",
+        foods: meal.foods.map((food) => ({
+          food_id: typeof food.food_id === "string" ? new ObjectId(food.food_id) : food.food_id,
+          grams: Number.parseInt(food.grams) || 100, // Asegurar que sea int
+        })),
+      }))
 
       const processedData = {
-        patient_id: planData.patient_id,
-        week_start: planData.week_start,
+        patient_id: typeof planData.patient_id === "string" ? new ObjectId(planData.patient_id) : planData.patient_id,
+        week_start: new Date(planData.week_start),
         dailyCalories: Number(planData.dailyCalories) || 0,
         protein: Number(planData.protein) || 0,
         fat: Number(planData.fat) || 0,
         carbs: Number(planData.carbs) || 0,
-        meals: planData.meals.map(meal => ({
-          day: meal.day,
-          type: meal.type,
-          time: meal.time || "00:00",
-          foods: meal.foods
-            .filter(food => !!food.food_id)
-            .map(food => ({
-              food_id: food.food_id,
-              grams: parseInt(food.grams) || 100
-            }))
-        })),
+        meals: processedMeals,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
       }
 
-      console.log("Processed data for MongoDB:", JSON.stringify(processedData, null, 2))
+      console.log("Creating weekly plan with processed data:", JSON.stringify(processedData, null, 2))
 
-      const result = await db.collection("WeeklyPlan").insertOne(processedData)
+      const result = await collection.insertOne(processedData)
 
       return {
-        _id: result.insertedId,
-        ...processedData
+        ...processedData,
+        _id: result.insertedId.toString(),
+        patient_id: processedData.patient_id.toString(),
       }
     } catch (error) {
-      console.error("WeeklyPlan.create error:", error)
+      console.error("Error creating weekly plan:", error)
       throw error
     }
   }
@@ -68,14 +52,120 @@ export class WeeklyPlan {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
+      console.log("Searching for plan with patient_id:", patientId, "week_start:", weekStart)
+
       const plan = await db.collection("WeeklyPlan").findOne({
         patient_id: new ObjectId(patientId),
-        week_start: new Date(weekStart)
+        week_start: new Date(weekStart),
       })
 
-      return plan
+      if (!plan) {
+        console.log("No plan found")
+        return null
+      }
+
+      console.log("Found plan with meals:", plan.meals?.length || 0)
+
+      // Enriquecer con detalles de alimentos si hay meals
+      if (plan.meals && Array.isArray(plan.meals)) {
+        console.log("Enriching meals with food details...")
+        plan.meals = await this.enrichMealsWithFoodDetails(plan.meals)
+        console.log("Meals enriched successfully")
+      }
+
+      return {
+        ...plan,
+        _id: plan._id.toString(),
+        patient_id: plan.patient_id.toString(),
+      }
     } catch (error) {
+      console.error("Error finding weekly plan:", error)
       throw error
+    }
+  }
+
+  static async enrichMealsWithFoodDetails(meals) {
+    try {
+      console.log("Starting meal enrichment for", meals.length, "meals")
+
+      const allFoodIds = new Set()
+
+      // Recopilar todos los food_ids únicos
+      meals.forEach((meal, mealIndex) => {
+        console.log(`Processing meal ${mealIndex}:`, meal.day, meal.type)
+        if (meal.foods && Array.isArray(meal.foods)) {
+          meal.foods.forEach((food, foodIndex) => {
+            console.log(`  Food ${foodIndex}:`, food.food_id)
+            if (food.food_id) {
+              // Manejar tanto ObjectId como string
+              const foodIdStr = food.food_id instanceof ObjectId ? food.food_id.toString() : food.food_id.toString()
+              allFoodIds.add(foodIdStr)
+            }
+          })
+        }
+      })
+
+      console.log("Unique food IDs to fetch:", Array.from(allFoodIds))
+
+      if (allFoodIds.size === 0) {
+        console.log("No food IDs found, returning original meals")
+        return meals
+      }
+
+      // Obtener detalles de todos los alimentos
+      const foodDetails = await Food.findByIds(Array.from(allFoodIds))
+      console.log("Food details fetched:", foodDetails.length)
+
+      // Crear mapa para búsqueda rápida
+      const foodMap = new Map()
+      foodDetails.forEach((food) => {
+        foodMap.set(food._id.toString(), food)
+        console.log(`Mapped food: ${food._id} -> ${food.name}`)
+      })
+
+      // Enriquecer las comidas con detalles
+      const enrichedMeals = meals.map((meal, mealIndex) => {
+        console.log(`Enriching meal ${mealIndex}:`, meal.day, meal.type)
+
+        const enrichedFoods = meal.foods
+          ? meal.foods.map((food, foodIndex) => {
+              const foodIdStr = food.food_id instanceof ObjectId ? food.food_id.toString() : food.food_id.toString()
+              const details = foodMap.get(foodIdStr)
+
+              console.log(`  Food ${foodIndex}: ${foodIdStr} -> ${details ? details.name : "NOT FOUND"}`)
+
+              return {
+                ...food,
+                food_id: foodIdStr, // Asegurar que sea string para el frontend
+                food_name: details?.name || "Unknown Food",
+                food_nutrients: details?.nutrients || null,
+                food_details: details || null,
+              }
+            })
+          : []
+
+        return {
+          ...meal,
+          foods: enrichedFoods,
+        }
+      })
+
+      console.log("Meal enrichment completed successfully")
+      return enrichedMeals
+    } catch (error) {
+      console.error("Error enriching meals with food details:", error)
+      // En caso de error, retornar meals originales pero con nombres por defecto
+      return meals.map((meal) => ({
+        ...meal,
+        foods: meal.foods
+          ? meal.foods.map((food) => ({
+              ...food,
+              food_id: food.food_id instanceof ObjectId ? food.food_id.toString() : food.food_id.toString(),
+              food_name: "Unknown Food",
+              food_nutrients: null,
+            }))
+          : [],
+      }))
     }
   }
 
@@ -83,38 +173,89 @@ export class WeeklyPlan {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
+      const collection = db.collection("WeeklyPlan")
 
-      const processedData = {
-        dailyCalories: Number(updateData.dailyCalories) || 0,
-        protein: Number(updateData.protein) || 0,
-        fat: Number(updateData.fat) || 0,
-        carbs: Number(updateData.carbs) || 0,
-        meals: updateData.meals.map(meal => ({
+      if (!ObjectId.isValid(planId)) {
+        throw new Error("Invalid plan ID format")
+      }
+
+      console.log("Update data received:", JSON.stringify(updateData, null, 2))
+
+      // Procesar meals para cumplir con el esquema si están presentes
+      let processedMeals = null
+      if (updateData.meals && Array.isArray(updateData.meals)) {
+        processedMeals = updateData.meals.map((meal) => ({
           day: meal.day,
           type: meal.type,
           time: meal.time || "00:00",
-          foods: meal.foods
-            .filter(food => !!food.food_id)
-            .map(food => ({
-              food_id: food.food_id,
-              grams: parseInt(food.grams) || 100
-            }))
-        })),
-        updated_at: new Date()
+          foods: meal.foods.map((food) => ({
+            food_id: typeof food.food_id === "string" ? new ObjectId(food.food_id) : food.food_id,
+            grams: Number.parseInt(food.grams) || 100, // Asegurar que sea int
+          })),
+        }))
+      }
+
+      const processedData = {
+        updated_at: new Date(),
+      }
+
+      // Solo incluir campos que están presentes en updateData
+      if (updateData.patient_id) {
+        processedData.patient_id =
+          typeof updateData.patient_id === "string" ? new ObjectId(updateData.patient_id) : updateData.patient_id
       }
 
       if (updateData.week_start) {
         processedData.week_start = new Date(updateData.week_start)
       }
 
-      const result = await db.collection("WeeklyPlan").updateOne(
-        { _id: new ObjectId(planId) },
-        { $set: processedData }
-      )
+      if (updateData.dailyCalories !== undefined) {
+        processedData.dailyCalories = Number(updateData.dailyCalories)
+      }
+
+      if (updateData.protein !== undefined) {
+        processedData.protein = Number(updateData.protein)
+      }
+
+      if (updateData.fat !== undefined) {
+        processedData.fat = Number(updateData.fat)
+      }
+
+      if (updateData.carbs !== undefined) {
+        processedData.carbs = Number(updateData.carbs)
+      }
+
+      if (processedMeals) {
+        processedData.meals = processedMeals
+      }
+
+      console.log("Processed data for update:", JSON.stringify(processedData, null, 2))
+
+      const result = await collection.updateOne({ _id: new ObjectId(planId) }, { $set: processedData })
 
       return result.modifiedCount > 0
     } catch (error) {
-      console.error("WeeklyPlan.update error:", error)
+      console.error("Error updating weekly plan:", error)
+      console.error("Error details:", error.errInfo || error.message)
+      throw error
+    }
+  }
+
+  static async delete(planId) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
+      const collection = db.collection("WeeklyPlan")
+
+      if (!ObjectId.isValid(planId)) {
+        throw new Error("Invalid plan ID format")
+      }
+
+      const result = await collection.deleteOne({ _id: new ObjectId(planId) })
+
+      return result.deletedCount > 0
+    } catch (error) {
+      console.error("Error deleting weekly plan:", error)
       throw error
     }
   }
@@ -123,121 +264,35 @@ export class WeeklyPlan {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
+      const collection = db.collection("WeeklyPlan")
 
-      const plan = await db.collection("WeeklyPlan")
-        .findOne(
-          { patient_id: new ObjectId(patientId) },
-          { sort: { week_start: -1 } }
-        )
+      if (!ObjectId.isValid(patientId)) {
+        throw new Error("Invalid patient ID format")
+      }
 
-      return plan
+      const plan = await collection.findOne({ patient_id: new ObjectId(patientId) }, { sort: { week_start: -1 } })
+
+      if (!plan) {
+        return null
+      }
+
+      if (plan.meals) {
+        plan.meals = await this.enrichMealsWithFoodDetails(plan.meals)
+      }
+
+      return {
+        ...plan,
+        _id: plan._id.toString(),
+        patient_id: plan.patient_id.toString(),
+      }
     } catch (error) {
+      console.error("Error finding latest weekly plan:", error)
       throw error
     }
   }
-
-  static convertToDisplayFormat(plan) {
-    if (!plan || !plan.meals || !Array.isArray(plan.meals)) return null
-
-    const displayFormat = {
-      ...plan,
-      meals: {
-        monday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        tuesday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        wednesday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        thursday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        friday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        saturday: { breakfast: [], lunch: [], dinner: [], snack: [] },
-        sunday: { breakfast: [], lunch: [], dinner: [], snack: [] }
-      }
-    }
-
-    plan.meals.forEach(meal => {
-      if (
-        displayFormat.meals[meal.day] &&
-        displayFormat.meals[meal.day][meal.type]
-      ) {
-        displayFormat.meals[meal.day][meal.type] = meal.foods.map(food => ({
-          food_id: food.food_id,
-          grams: food.grams,
-          time: meal.time
-        }))
-      }
-    })
-
-    return displayFormat
-  }
-
-  static convertToStorageFormat(displayPlan) {
-    if (!displayPlan || !displayPlan.meals) return []
-
-    const meals = []
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack']
-
-    const defaultTimes = {
-      breakfast: "08:00",
-      lunch: "13:00",
-      dinner: "19:00",
-      snack: "16:00"
-    }
-
-    days.forEach(day => {
-      mealTypes.forEach(type => {
-        const dayMeals = displayPlan.meals[day]
-        if (dayMeals && dayMeals[type] && dayMeals[type].length > 0) {
-          meals.push({
-            day: day,
-            type: type,
-            time: dayMeals[type][0]?.time || defaultTimes[type],
-            foods: dayMeals[type].map(food => ({
-              food_id: food.food_id,
-              grams: parseInt(food.grams) || 100
-            }))
-          })
-        }
-      })
-    })
-
-    return meals
-  }
 }
 
+// Export helper function separately
 export async function enrichMealsWithFoodDetails(meals) {
-  const client = await clientPromise
-  const db = client.db("fitbalance")
-
-  const foodIds = [
-    ...new Set(
-      meals.flatMap(meal =>
-        meal.foods.map(f => f.food_id)
-      )
-    )
-  ]
-
-  const objectIds = foodIds.map(id => /^[a-fA-F0-9]{24}$/.test(id) ? new ObjectId(id) : id)
-
-  const foodsData = await db.collection("Food")
-    .find({ _id: { $in: objectIds } })
-    .toArray()
-
-  const foodMap = {}
-  foodsData.forEach(food => {
-    foodMap[food._id.toString()] = food
-  })
-
-  const enriched = meals.map(meal => ({
-    ...meal,
-    foods: meal.foods.map(food => {
-      const data = foodMap[food.food_id.toString()]
-      return {
-        food_id: food.food_id,
-        food_name: data?.name || "Unknown Food",
-        grams: food.grams,
-        food_nutrients: data?.nutrients || null
-      }
-    })
-  }))
-
-  return enriched
+  return WeeklyPlan.enrichMealsWithFoodDetails(meals)
 }

@@ -29,10 +29,10 @@ export default function Page() {
     const message = searchParams.get("message")
     if (message) {
       setSuccessMessage(message)
-      // Auto-hide message after 5 seconds
+      // Auto-hide message after 12 seconds
       setTimeout(() => {
         setSuccessMessage("")
-      }, 5000)
+      }, 12000)
     }
   }, [searchParams])
 

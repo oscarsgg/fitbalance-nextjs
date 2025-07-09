@@ -5,13 +5,21 @@ import bcrypt from "bcryptjs"
 export class Nutritionist {
   constructor(data) {
     this.name = data.name
+    this.lastName = data.lastName
+    this.secondLastName = data.secondLastName || null
     this.email = data.email
     this.password = data.password
-    this.phone = data.phone || null
-    this.address = data.address || null
+    this.city = data.city
+    this.street = data.street
+    this.neighborhood = data.neighborhood
+    this.streetNumber = data.streetNumber
+    this.licenseNumber = data.licenseNumber || null
+    this.licenseFileUrl = data.licenseFileUrl || null
+    this.specialization = data.specialization || null
     this.createdAt = data.createdAt || new Date()
     this.isActive = data.isActive !== undefined ? data.isActive : true
     this.lastLogin = data.lastLogin || null
+    this.updatedAt = data.updatedAt || null
   }
 
   // Create new nutritionist

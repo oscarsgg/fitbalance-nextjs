@@ -4,15 +4,29 @@ import { Nutritionist } from "@/models/Nutritionist"
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { name, email, password, confirmPassword, phone } = body
+    const {
+      name,
+      lastName,
+      secondLastName,
+      email,
+      password,
+      city,
+      street,
+      neighborhood,
+      streetNumber,
+      licenseNumber,
+      licenseFileUrl,
+      specialization,
+    } = body
 
-    // Validation
-    if (!name || !email || !password || !confirmPassword) {
-      return NextResponse.json({ error: "Name, email, password and confirm password are required" }, { status: 400 })
-    }
-
-    if (password !== confirmPassword) {
-      return NextResponse.json({ error: "Passwords do not match" }, { status: 400 })
+    // Validation for required fields
+    if (!name || !lastName || !email || !password || !city || !street || !neighborhood || !streetNumber) {
+      return NextResponse.json(
+        {
+          error: "Name, lastName, email, password, city, street, neighborhood, and streetNumber are required",
+        },
+        { status: 400 },
+      )
     }
 
     if (password.length < 6) {
@@ -28,9 +42,17 @@ export async function POST(request) {
     // Create nutritionist
     const nutritionist = await Nutritionist.create({
       name,
+      lastName,
+      secondLastName,
       email: email.toLowerCase(),
       password,
-      phone,
+      city,
+      street,
+      neighborhood,
+      streetNumber,
+      licenseNumber,
+      licenseFileUrl,
+      specialization,
     })
 
     return NextResponse.json(
@@ -39,6 +61,7 @@ export async function POST(request) {
         nutritionist: {
           id: nutritionist._id,
           name: nutritionist.name,
+          lastName: nutritionist.lastName,
           email: nutritionist.email,
         },
       },

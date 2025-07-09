@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, Scale, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
@@ -77,7 +78,14 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="flex justify-center">
             <div className="flex items-center">
-              <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2 rounded-2xl" />
+              <Image
+                src="/logo1.png"
+                alt="FitBalance Logo"
+                width={48}
+                height={48}
+                className="mr-2 rounded-2xl"
+              />
+
               <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
             </div>
           </div>

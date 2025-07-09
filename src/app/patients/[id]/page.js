@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { User, ArrowLeft } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import Sidebar from "@/components/layout/Sidebar"
 import DietManagement from "@/components/patients/DietManagement"
@@ -12,21 +13,21 @@ export default function PatientDetailsPage() {
   const [patient, setPatient] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const loadPatient = async () => {
-    try {
-      const response = await fetch(`/api/patients/${id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setPatient(data.patient)
-      }
-    } catch (error) {
-      console.error("Error loading patient:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const loadPatient = async () => {
+      try {
+        const response = await fetch(`/api/patients/${id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPatient(data.patient)
+        }
+      } catch (error) {
+        console.error("Error loading patient:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     loadPatient()
   }, [id])
 
@@ -93,7 +94,7 @@ export default function PatientDetailsPage() {
                     <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-white">
                       <div className="flex items-center space-x-4">
                         <div className="relative">
-                          <img
+                          <Image
                             className="h-20 w-20 rounded-full border-4 border-white shadow-lg object-cover"
                             src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
                             alt={patient.name}

@@ -59,16 +59,14 @@ export default function DietManagement({ patientId }) {
       clearFormData()
     }
   }, [])
-  
 
   function getMonday(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate())
     const day = d.getDay()
     const diff = day === 0 ? -6 : 1 - day
     d.setDate(d.getDate() + diff)
-    return d // <-- ya está bien
+    return d
   }
-
 
   const clearFormData = () => {
     setSearchTerm("")
@@ -102,23 +100,24 @@ export default function DietManagement({ patientId }) {
   }
 
   const loadWeeklyPlan = async () => {
-  try {
-    const response = await fetch(`/api/patients/${patientId}/weekly-plan?weekStart=${selectedWeekStart}`)
-    if (response.ok) {
-      const data = await response.json()
-      if (data.plan) {
-        // ❌ Ya no llames convertToDisplayFormat
-        setWeeklyPlan(data.plan)
-      } else {
-        resetWeeklyPlan()
+    try {
+      const response = await fetch(`/api/patients/${patientId}/weekly-plan?weekStart=${selectedWeekStart}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.plan) {
+          console.log("Loaded plan:", data.plan)
+          // Convertir el plan de formato de almacenamiento a formato de visualización
+          const displayPlan = convertToDisplayFormat(data.plan)
+          setWeeklyPlan(displayPlan)
+        } else {
+          resetWeeklyPlan()
+        }
       }
+    } catch (error) {
+      console.error("Error loading weekly plan:", error)
+      resetWeeklyPlan()
     }
-  } catch (error) {
-    console.error("Error loading weekly plan:", error)
-    resetWeeklyPlan()
   }
-}
-
 
   const getEmptyWeekMeals = () => {
     const emptyDay = {
@@ -141,24 +140,34 @@ export default function DietManagement({ patientId }) {
 
   // Convert from storage format (array) to display format (nested object)
   const convertToDisplayFormat = (plan) => {
-    if (!plan || !plan.meals) return null
+    if (!plan || !plan.meals) return plan
+
+    console.log("Converting plan to display format:", plan)
 
     const displayFormat = {
       ...plan,
       meals: getEmptyWeekMeals(),
     }
 
-    // Convert array format to nested object format for easier UI handling
-    plan.meals.forEach((meal) => {
-      if (displayFormat.meals[meal.day] && displayFormat.meals[meal.day][meal.type]) {
-        displayFormat.meals[meal.day][meal.type] = meal.foods.map((food) => ({
-          food_id: food.food_id,
-          grams: food.grams,
-          time: meal.time,
-        }))
-      }
-    })
+    // Si meals es un array (formato de almacenamiento)
+    if (Array.isArray(plan.meals)) {
+      plan.meals.forEach((meal) => {
+        if (displayFormat.meals[meal.day] && displayFormat.meals[meal.day][meal.type]) {
+          displayFormat.meals[meal.day][meal.type] = meal.foods.map((food) => ({
+            food_id: food.food_id,
+            grams: food.grams,
+            food_name: food.food_name || "Unknown Food",
+            food_nutrients: food.food_nutrients || null,
+            time: meal.time,
+          }))
+        }
+      })
+    } else {
+      // Si meals ya está en formato de objeto (formato de visualización)
+      displayFormat.meals = plan.meals
+    }
 
+    console.log("Converted to display format:", displayFormat)
     return displayFormat
   }
 
@@ -198,7 +207,6 @@ export default function DietManagement({ patientId }) {
     return meals
   }
 
-  
   const validateForm = () => {
     const errors = []
 
@@ -252,6 +260,9 @@ export default function DietManagement({ patientId }) {
         const data = await response.json()
         console.log("Search results:", data.foods)
         setSearchResults(data.foods || [])
+      } else {
+        console.error("Search failed:", response.status, response.statusText)
+        setSearchResults([])
       }
     } catch (error) {
       console.error("Error searching food:", error)
@@ -323,7 +334,7 @@ export default function DietManagement({ patientId }) {
 
   const saveWeeklyPlan = async () => {
     if (!weeklyPlan) return
-    
+
     // Validate form before saving
     if (!validateForm()) {
       setErrorMessage("Please fix the validation errors before saving.")
@@ -363,7 +374,6 @@ export default function DietManagement({ patientId }) {
       if (response.ok) {
         setSuccessMessage("Weekly plan saved successfully!")
         setShowSuccessModal(true)
-        
       } else {
         const data = await response.json()
         setErrorMessage(data.error || "Failed to save weekly plan")
@@ -645,347 +655,346 @@ export default function DietManagement({ patientId }) {
           </div>
         </div>
 
-          {/* Weekly plan */}
-          <div className="bg-white/80 shadow-md rounded-xl p-4 border border-gray-200">
-            <h4 className="text-lg font-medium text-gray-800 mt-3 text-center">Weekly plan</h4>
-            <p className="text-sm font-medium text-gray-800 mb-5 text-center pb-4 border-b border-gray-300">
-              You can assign a daily menu diet to complete the weekly plan for the patient
-            </p>
+        {/* Weekly plan */}
+        <div className="bg-white/80 shadow-md rounded-xl p-4 border border-gray-200">
+          <h4 className="text-lg font-medium text-gray-800 mt-3 text-center">Weekly plan</h4>
+          <p className="text-sm font-medium text-gray-800 mb-5 text-center pb-4 border-b border-gray-300">
+            You can assign a daily menu diet to complete the weekly plan for the patient
+          </p>
 
-            {/* Week selector */}
-            <div className="flex justify-center items-center mb-4">
-              <h4 className="text-lg font-medium text-gray-800 text-center mr-2">
-                New weekly plan starting date <span className="text-red-500">*</span>
-              </h4>
-              <Tooltip
-                placement="bottom"
-                className="border border-blue-gray-50 bg-white text-center px-4 py-3 shadow-xl shadow-black/10 text-gray-500"
-                content={
-                  <>
-                    <p>Select the start date for the patient's diet.</p>
-                    <p>Diets can only begin on Mondays.</p>
-                  </>
-                }
+          {/* Week selector */}
+          <div className="flex justify-center items-center mb-4">
+            <h4 className="text-lg font-medium text-gray-800 text-center mr-2">
+              New weekly plan starting date <span className="text-red-500">*</span>
+            </h4>
+            <Tooltip
+              placement="bottom"
+              className="border border-blue-gray-50 bg-white text-center px-4 py-3 shadow-xl shadow-black/10 text-gray-500"
+              content={
+                <>
+                  <p>Select the start date for the patient's diet.</p>
+                  <p>Diets can only begin on Mondays.</p>
+                </>
+              }
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="h-4 w-4 cursor-pointer text-blue-gray-500"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="h-4 w-4 cursor-pointer text-blue-gray-500"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                  />
-                </svg>
-              </Tooltip>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
+              </svg>
+            </Tooltip>
+          </div>
 
-            <div className="flex justify-center mb-4 pb-4 border-b border-gray-300">
-              <input
-                type="date"
-                value={formatDateForInput(selectedWeekStart)} // <-- importante
-                onChange={(e) => {
-                  const [year, month, day] = e.target.value.split("-")
-                  const date = new Date(year, month - 1, day)
-                  setSelectedWeekStart(getMonday(date)) // <-- mantiene lunes correcto
-                }}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
+          <div className="flex justify-center mb-4 pb-4 border-b border-gray-300">
+            <input
+              type="date"
+              value={formatDateForInput(selectedWeekStart)}
+              onChange={(e) => {
+                const [year, month, day] = e.target.value.split("-")
+                const date = new Date(year, month - 1, day)
+                setSelectedWeekStart(getMonday(date))
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+          </div>
 
-            </div>
-
-            {/* Calendar display */}
-            <div className="flex justify-center items-center mb-2">
-              <h4 className="text-lg font-medium text-gray-800 text-center mr-2">Day of the week</h4>
-              <Tooltip
-                placement="bottom"
-                className="border border-blue-gray-50 bg-white px-4 py-3 shadow-xl shadow-black/10 text-gray-500"
-                content="Select and configure each patient's day menu."
+          {/* Calendar display */}
+          <div className="flex justify-center items-center mb-2">
+            <h4 className="text-lg font-medium text-gray-800 text-center mr-2">Day of the week</h4>
+            <Tooltip
+              placement="bottom"
+              className="border border-blue-gray-50 bg-white px-4 py-3 shadow-xl shadow-black/10 text-gray-500"
+              content="Select and configure each patient's day menu."
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="h-4 w-4 cursor-pointer text-blue-gray-500"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="h-4 w-4 cursor-pointer text-blue-gray-500"
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
+              </svg>
+            </Tooltip>
+          </div>
+
+          <div className="flex bg-white shadow-md justify-start md:justify-center rounded-lg overflow-x-auto mx-auto py-4 px-2 md:mx-12">
+            {daysOfWeek.map((day, index) => {
+              const date = weekDates[index]
+              const isSelected = day.key === selectedDay
+              const completion = calculateDayCompletion(day.key)
+              const hasError = validationErrors.some((error) => error.includes(day.label))
+
+              return (
+                <div
+                  key={day.key}
+                  onClick={() => setSelectedDay(day.key)}
+                  className={`flex group hover:bg-green-500 hover:shadow-lg rounded-lg mx-1 transition-all duration-300 cursor-pointer justify-center w-16 ${
+                    isSelected ? "bg-green-600 shadow-lg" : ""
+                  } ${hasError ? "ring-2 ring-red-400" : ""}`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                  />
-                </svg>
-              </Tooltip>
-            </div>
+                  <div className="flex items-center px-4 py-4">
+                    <div className="text-center">
+                      <p
+                        className={`text-sm transition-all duration-300 ${
+                          isSelected ? "text-gray-100" : "text-gray-900 group-hover:text-gray-100"
+                        }`}
+                      >
+                        {day.label.slice(0, 3)}
+                      </p>
+                      <p
+                        className={`mt-3 transition-all duration-300 ${
+                          isSelected
+                            ? "text-gray-100 font-bold"
+                            : "text-gray-900 group-hover:text-gray-100 group-hover:font-bold"
+                        }`}
+                      >
+                        {date.getDate()}
+                      </p>
+                      {completion > 0 && (
+                        <div className="mt-1">
+                          <span className="text-xs bg-white text-green-600 px-1 rounded">{completion}%</span>
+                        </div>
+                      )}
+                      {hasError && (
+                        <div className="mt-1">
+                          <AlertCircle className="h-3 w-3 text-red-500 mx-auto" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
 
-            <div className="flex bg-white shadow-md justify-start md:justify-center rounded-lg overflow-x-auto mx-auto py-4 px-2 md:mx-12">
-              {daysOfWeek.map((day, index) => {
-                const date = weekDates[index]
-                const isSelected = day.key === selectedDay
-                const completion = calculateDayCompletion(day.key)
-                const hasError = validationErrors.some((error) => error.includes(day.label))
+          {/* Meal Management Grid */}
+          <div className="mb-6">
+            <h4 className="text-lg font-medium text-gray-800 text-center mt-4 mb-4">Meal Management</h4>
 
-                return (
-                  <div
-                    key={day.key}
-                    onClick={() => setSelectedDay(day.key)}
-                    className={`flex group hover:bg-green-500 hover:shadow-lg rounded-lg mx-1 transition-all duration-300 cursor-pointer justify-center w-16 ${
-                      isSelected ? "bg-green-600 shadow-lg" : ""
-                    } ${hasError ? "ring-2 ring-red-400" : ""}`}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column - Meal Type & Search */}
+              <div className="space-y-4">
+                {/* Meal Type Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Meal Type</label>
+                  <select
+                    value={selectedMealType}
+                    onChange={(e) => setSelectedMealType(e.target.value)}
+                    className="w-full bg-white border border-green-500 text-gray-800 py-3 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   >
-                    <div className="flex items-center px-4 py-4">
-                      <div className="text-center">
-                        <p
-                          className={`text-sm transition-all duration-300 ${
-                            isSelected ? "text-gray-100" : "text-gray-900 group-hover:text-gray-100"
-                          }`}
-                        >
-                          {day.label.slice(0, 3)}
-                        </p>
-                        <p
-                          className={`mt-3 transition-all duration-300 ${
-                            isSelected
-                              ? "text-gray-100 font-bold"
-                              : "text-gray-900 group-hover:text-gray-100 group-hover:font-bold"
-                          }`}
-                        >
-                          {date.getDate()}
-                        </p>
-                        {completion > 0 && (
-                          <div className="mt-1">
-                            <span className="text-xs bg-white text-green-600 px-1 rounded">{completion}%</span>
-                          </div>
-                        )}
-                        {hasError && (
-                          <div className="mt-1">
-                            <AlertCircle className="h-3 w-3 text-red-500 mx-auto" />
-                          </div>
-                        )}
-                      </div>
+                    {mealTypes.map((meal) => (
+                      <option key={meal.key} value={meal.key}>
+                        {meal.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Food Search */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Search Food</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search food..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value)
+                        if (e.target.value.length >= 2) {
+                          searchFood()
+                        } else {
+                          setSearchResults([])
+                        }
+                      }}
+                      className="flex-1 px-3 py-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Grams"
+                      value={selectedGrams}
+                      onChange={(e) => setSelectedGrams(e.target.value)}
+                      min="1"
+                      className="w-24 px-3 py-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-sm">
+                    <div className="p-2 bg-gray-50 border-b">
+                      <p className="text-sm font-medium text-gray-600">Search Results ({searchResults.length})</p>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Meal Management Grid */}
-            <div className="mb-6">
-              <h4 className="text-lg font-medium text-gray-800 text-center mt-4 mb-4">Meal Management</h4>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Column - Meal Type & Search */}
-                <div className="space-y-4">
-                  {/* Meal Type Selector */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Meal Type</label>
-                    <select
-                      value={selectedMealType}
-                      onChange={(e) => setSelectedMealType(e.target.value)}
-                      className="w-full bg-white border border-green-500 text-gray-800 py-3 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    >
-                      {mealTypes.map((meal) => (
-                        <option key={meal.key} value={meal.key}>
-                          {meal.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Food Search */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Food</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Search food..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value)
-                          if (e.target.value.length >= 2) {
-                            searchFood()
-                          } else {
-                            setSearchResults([])
-                          }
-                        }}
-                        className="flex-1 px-3 py-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Grams"
-                        value={selectedGrams}
-                        onChange={(e) => setSelectedGrams(e.target.value)}
-                        min="1"
-                        className="w-24 px-3 py-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Search Results */}
-                  {searchResults.length > 0 && (
-                    <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-sm">
-                      <div className="p-2 bg-gray-50 border-b">
-                        <p className="text-sm font-medium text-gray-600">Search Results ({searchResults.length})</p>
+                    {searchResults.map((food) => (
+                      <div
+                        key={food._id}
+                        className="p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex justify-between items-center"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{food.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {food.nutrients.energy_kcal} kcal per 100g | P: {food.nutrients.protein_g}g | C:{" "}
+                            {food.nutrients.carbohydrates_g}g | F: {food.nutrients.fat_g}g
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => addFoodToMeal(food)}
+                          disabled={!selectedGrams || selectedGrams <= 0}
+                          className="ml-3 p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={`Add ${selectedGrams}g to ${mealTypes.find((m) => m.key === selectedMealType)?.label}`}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
                       </div>
-                      {searchResults.map((food) => (
+                    ))}
+                  </div>
+                )}
+
+                {loading && searchTerm.length >= 2 && (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <span className="ml-2 text-gray-600">Searching...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Current Meal Items */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current {mealTypes.find((m) => m.key === selectedMealType)?.label} for{" "}
+                  {daysOfWeek.find((d) => d.key === selectedDay)?.label}
+                </label>
+
+                <div className="border border-gray-200 rounded-lg bg-white min-h-[300px]">
+                  {weeklyPlan?.meals?.[selectedDay]?.[selectedMealType]?.length > 0 ? (
+                    <div className="p-4 space-y-3">
+                      {weeklyPlan.meals[selectedDay][selectedMealType].map((meal, index) => (
                         <div
-                          key={food._id}
-                          className="p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex justify-between items-center"
+                          key={`${selectedDay}-${selectedMealType}-${index}`}
+                          className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-300/75"
                         >
                           <div className="flex-1">
-                            <p className="font-medium text-gray-900">{food.name}</p>
-                            <p className="text-sm text-gray-500">
-                              {food.nutrients.energy_kcal} kcal per 100g | P: {food.nutrients.protein_g}g | C:{" "}
-                              {food.nutrients.carbohydrates_g}g | F: {food.nutrients.fat_g}g
-                            </p>
+                            <p className="font-medium text-gray-800">{meal.food_name}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                              <span className="font-medium">{meal.grams}g</span>
+                              <span>
+                                {meal.food_nutrients
+                                  ? Math.round((meal.food_nutrients.energy_kcal * meal.grams) / 100)
+                                  : 0}{" "}
+                                kcal
+                              </span>
+                              {meal.food_nutrients && (
+                                <span>
+                                  P: {Math.round((meal.food_nutrients.protein_g * meal.grams) / 100)}g | C:{" "}
+                                  {Math.round((meal.food_nutrients.carbohydrates_g * meal.grams) / 100)}g | F:{" "}
+                                  {Math.round((meal.food_nutrients.fat_g * meal.grams) / 100)}g
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <button
-                            onClick={() => addFoodToMeal(food)}
-                            disabled={!selectedGrams || selectedGrams <= 0}
-                            className="ml-3 p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={`Add ${selectedGrams}g to ${mealTypes.find((m) => m.key === selectedMealType)?.label}`}
+                            onClick={() => removeFoodFromMeal(selectedDay, selectedMealType, index)}
+                            className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            title="Remove from meal"
                           >
-                            <Plus className="h-4 w-4" />
+                            <Trash className="h-4 w-4" />
                           </button>
                         </div>
                       ))}
-                    </div>
-                  )}
 
-                  {loading && searchTerm.length >= 2 && (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">Searching...</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Column - Current Meal Items */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Current {mealTypes.find((m) => m.key === selectedMealType)?.label} for{" "}
-                    {daysOfWeek.find((d) => d.key === selectedDay)?.label}
-                  </label>
-
-                  <div className="border border-gray-200 rounded-lg bg-white min-h-[300px]">
-                    {weeklyPlan?.meals?.[selectedDay]?.[selectedMealType]?.length > 0 ? (
-                      <div className="p-4 space-y-3">
-                        {weeklyPlan.meals[selectedDay][selectedMealType].map((meal, index) => (
-                          <div
-                            key={`${selectedDay}-${selectedMealType}-${index}`}
-                            className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-300/75"
-                          >
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-800">{meal.food_name}</p>
-                              <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                                <span className="font-medium">{meal.grams}g</span>
-                                <span>
-                                  {meal.food_nutrients
+                      {/* Meal Summary */}
+                      <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-300">
+                        <p className="text-sm font-medium text-green-800 mb-1">Meal Summary</p>
+                        <div className="text-sm text-green-700">
+                          {(() => {
+                            const totalCalories = weeklyPlan.meals[selectedDay][selectedMealType].reduce(
+                              (sum, meal) => {
+                                return (
+                                  sum +
+                                  (meal.food_nutrients
                                     ? Math.round((meal.food_nutrients.energy_kcal * meal.grams) / 100)
-                                    : 0}{" "}
-                                  kcal
-                                </span>
-                                {meal.food_nutrients && (
-                                  <span>
-                                    P: {Math.round((meal.food_nutrients.protein_g * meal.grams) / 100)}g | C:{" "}
-                                    {Math.round((meal.food_nutrients.carbohydrates_g * meal.grams) / 100)}g | F:{" "}
-                                    {Math.round((meal.food_nutrients.fat_g * meal.grams) / 100)}g
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => removeFoodFromMeal(selectedDay, selectedMealType, index)}
-                              className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                              title="Remove from meal"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ))}
-
-                        {/* Meal Summary */}
-                        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-300">
-                          <p className="text-sm font-medium text-green-800 mb-1">Meal Summary</p>
-                          <div className="text-sm text-green-700">
-                            {(() => {
-                              const totalCalories = weeklyPlan.meals[selectedDay][selectedMealType].reduce(
-                                (sum, meal) => {
-                                  return (
-                                    sum +
-                                    (meal.food_nutrients
-                                      ? Math.round((meal.food_nutrients.energy_kcal * meal.grams) / 100)
-                                      : 0)
-                                  )
-                                },
-                                0,
-                              )
-                              const totalProtein = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
-                                return (
-                                  sum +
-                                  (meal.food_nutrients
-                                    ? Math.round((meal.food_nutrients.protein_g * meal.grams) / 100)
                                     : 0)
                                 )
-                              }, 0)
-                              const totalCarbs = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
-                                return (
-                                  sum +
-                                  (meal.food_nutrients
-                                    ? Math.round((meal.food_nutrients.carbohydrates_g * meal.grams) / 100)
-                                    : 0)
-                                )
-                              }, 0)
-                              const totalFat = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
-                                return (
-                                  sum +
-                                  (meal.food_nutrients ? Math.round((meal.food_nutrients.fat_g * meal.grams) / 100) : 0)
-                                )
-                              }, 0)
-
+                              },
+                              0,
+                            )
+                            const totalProtein = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
                               return (
-                                <div className="grid grid-cols-2 gap-2">
-                                  <span>Total Calories: {totalCalories} kcal</span>
-                                  <span>Protein: {totalProtein}g</span>
-                                  <span>Carbs: {totalCarbs}g</span>
-                                  <span>Fat: {totalFat}g</span>
-                                </div>
+                                sum +
+                                (meal.food_nutrients
+                                  ? Math.round((meal.food_nutrients.protein_g * meal.grams) / 100)
+                                  : 0)
                               )
-                            })()}
-                          </div>
+                            }, 0)
+                            const totalCarbs = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
+                              return (
+                                sum +
+                                (meal.food_nutrients
+                                  ? Math.round((meal.food_nutrients.carbohydrates_g * meal.grams) / 100)
+                                  : 0)
+                              )
+                            }, 0)
+                            const totalFat = weeklyPlan.meals[selectedDay][selectedMealType].reduce((sum, meal) => {
+                              return (
+                                sum +
+                                (meal.food_nutrients ? Math.round((meal.food_nutrients.fat_g * meal.grams) / 100) : 0)
+                              )
+                            }, 0)
+
+                            return (
+                              <div className="grid grid-cols-2 gap-2">
+                                <span>Total Calories: {totalCalories} kcal</span>
+                                <span>Protein: {totalProtein}g</span>
+                                <span>Carbs: {totalCarbs}g</span>
+                                <span>Fat: {totalFat}g</span>
+                              </div>
+                            )
+                          })()}
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex items-center justify-center h-full min-h-[200px] text-gray-500">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Plus className="h-8 w-8 text-gray-400" />
-                          </div>
-                          <p>No meals added yet</p>
-                          <p className="text-sm">Search and add foods to this {selectedMealType}</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full min-h-[200px] text-gray-500">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Plus className="h-8 w-8 text-gray-400" />
                         </div>
+                        <p>No meals added yet</p>
+                        <p className="text-sm">Search and add foods to this {selectedMealType}</p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-            {/* Week completion progress */}
-            <div className="w-full my-3">
-              <div className="mb-2 flex items-center justify-between gap-4">
-                <Typography color="blue-gray" variant="h6">
-                  Week Completed
-                </Typography>
-                <Typography color="blue-gray" variant="h6">
-                  {weekCompletion}%
-                </Typography>
-              </div>
-              
+          </div>
+          {/* Week completion progress */}
+          <div className="w-full my-3">
+            <div className="mb-2 flex items-center justify-between gap-4">
+              <Typography color="blue-gray" variant="h6">
+                Week Completed
+              </Typography>
+              <Typography color="blue-gray" variant="h6">
+                {weekCompletion}%
+              </Typography>
+            </div>
+
             <Progress value={weekCompletion} color="green" className="h-2 bg-gray-200 rounded-full" />
           </div>
         </div>

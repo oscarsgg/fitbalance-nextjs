@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
 import { Food } from "@/models/Food"
+import { ObjectId } from "mongodb"
 
-export async function GET(request) {
+export async function GET(request, { params }) {
   try {
     const token = request.cookies.get("token")?.value
     if (!token) {
@@ -16,23 +17,22 @@ export async function GET(request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const query = searchParams.get("q")
-    const limit = Number.parseInt(searchParams.get("limit")) || 20
+    const { id } = await params
 
-    if (!query || query.trim().length === 0) {
-      return NextResponse.json({ foods: [] })
+    // Validar formato de ObjectId
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid food ID format" }, { status: 400 })
     }
 
-    console.log("Searching for foods with query:", query)
+    const food = await Food.findById(id)
 
-    const foods = await Food.search(query.trim(), limit)
+    if (!food) {
+      return NextResponse.json({ error: "Food not found" }, { status: 404 })
+    }
 
-    console.log(`Found ${foods.length} foods for query: ${query}`)
-
-    return NextResponse.json({ foods })
+    return NextResponse.json({ food })
   } catch (error) {
-    console.error("Food search error:", error)
+    console.error("Get food error:", error)
     return NextResponse.json(
       {
         error: "Internal server error",
