@@ -98,6 +98,8 @@ export default function PatientDetailsPage() {
                             className="h-20 w-20 rounded-full border-4 border-white shadow-lg object-cover"
                             src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
                             alt={patient.name}
+                            width={80}
+                            height={80}
                           />
                           <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-400 border-2 border-white rounded-full flex items-center justify-center">
                             <div className="h-2 w-2 bg-white rounded-full"></div>

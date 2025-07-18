@@ -7,10 +7,10 @@ export class Patient {
     this.username = data.username
     this.password = data.password
     this.name = data.name
-    this.age = data.age
+    this.age = Number.isInteger(data.age) ? data.age : parseInt(data.age)
     this.gender = data.gender
-    this.height_cm = data.height_cm
-    this.weight_kg = data.weight_kg
+    this.height_cm = Number.isInteger(data.height_cm) ? data.height_cm : parseInt(data.height_cm)
+    this.weight_kg = Number.isInteger(data.weight_kg) ? data.weight_kg : parseInt(data.weight_kg)
     this.email = data.email
     this.phone = data.phone
     this.objective = data.objective

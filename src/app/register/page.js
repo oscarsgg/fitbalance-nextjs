@@ -24,7 +24,6 @@ export default function RegisterPage() {
 
     // Step 3: Professional Info
     licenseNumber: "",
-    licenseFileUrl: "",
     specialization: "",
   })
 
@@ -109,6 +108,21 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0
   }
 
+  const validateStep3 = () => {
+    const errors = {}
+
+    if (!formData.licenseNumber.trim()) {
+      errors.licenseNumber = "License number is required"
+    }
+
+    if (!formData.specialization.trim()) {
+      errors.specialization = "Specialization is required"
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleNext = () => {
     if (currentStep === 1 && validateStep1()) {
       setCurrentStep(2)
@@ -139,9 +153,8 @@ export default function RegisterPage() {
         street: formData.street,
         neighborhood: formData.neighborhood,
         streetNumber: formData.streetNumber,
-        licenseNumber: skipProfessionalInfo ? null : formData.licenseNumber || null,
-        licenseFileUrl: skipProfessionalInfo ? null : formData.licenseFileUrl || null,
-        specialization: skipProfessionalInfo ? null : formData.specialization || null,
+        licenseNumber: formData.licenseNumber || null,
+        specialization: formData.specialization || null,
       }
 
       // Step 1: Register the user
@@ -463,54 +476,47 @@ export default function RegisterPage() {
       <p className="mt-2 text-center text-sm text-gray-600">Add your professional credentials (optional)</p>
 
       <div className="space-y-6 mt-8">
-        <div>
-          <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
-            License Number
-          </label>
-          <div className="mt-1">
-            <input
-              id="licenseNumber"
-              name="licenseNumber"
-              type="text"
-              value={formData.licenseNumber}
-              onChange={handleChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
-              placeholder="12345678"
-            />
-          </div>
-        </div>
 
         <div>
-          <label htmlFor="licenseFileUrl" className="block text-sm font-medium text-gray-700">
-            License File URL
+          <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
+            License Number *
           </label>
           <div className="mt-1">
-            <input
-              id="licenseFileUrl"
-              name="licenseFileUrl"
-              type="url"
-              value={formData.licenseFileUrl}
-              onChange={handleChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
-              placeholder="https://example.com/license.pdf"
-            />
+              <input
+                id="licenseNumber"
+                name="licenseNumber"
+                type="text"
+                required
+                value={formData.licenseNumber}
+                onChange={handleChange}
+                className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 ${
+                  fieldErrors.licenseNumber ? "border-red-300" : "border-gray-300"
+                }`}
+                placeholder="12345678"
+              />
+            {fieldErrors.licenseNumber && <p className="mt-1 text-sm text-red-600">{fieldErrors.licenseNumber}</p>}
           </div>
         </div>
+        
 
         <div>
           <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
-            Specialization
+            Specialization *
           </label>
           <div className="mt-1">
             <input
               id="specialization"
               name="specialization"
               type="text"
+              required
               value={formData.specialization}
               onChange={handleChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500"
+              className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 ${
+                fieldErrors.specialization ? "border-red-300" : "border-gray-300"
+              }`}
               placeholder="Clinical Nutrition"
             />
+            {fieldErrors.specialization && <p className="mt-1 text-sm text-red-600">{fieldErrors.specialization}</p>}
           </div>
         </div>
 
@@ -525,15 +531,11 @@ export default function RegisterPage() {
           </button>
           <button
             type="button"
-            onClick={() => handleSubmit(true)}
-            disabled={isLoading}
-            className="flex-1 flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Creating..." : "Skip & Create Account"}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSubmit(false)}
+            onClick={() => {
+              if (validateStep3()) {
+                handleSubmit(false)
+              }
+            }}
             disabled={isLoading}
             className="flex-1 flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >

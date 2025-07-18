@@ -15,7 +15,6 @@ export async function POST(request) {
       neighborhood,
       streetNumber,
       licenseNumber,
-      licenseFileUrl,
       specialization,
     } = body
 
@@ -51,7 +50,6 @@ export async function POST(request) {
       neighborhood,
       streetNumber,
       licenseNumber,
-      licenseFileUrl,
       specialization,
     })
 

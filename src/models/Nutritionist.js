@@ -14,7 +14,6 @@ export class Nutritionist {
     this.neighborhood = data.neighborhood
     this.streetNumber = data.streetNumber
     this.licenseNumber = data.licenseNumber || null
-    this.licenseFileUrl = data.licenseFileUrl || null
     this.specialization = data.specialization || null
     this.createdAt = data.createdAt || new Date()
     this.isActive = data.isActive !== undefined ? data.isActive : true
