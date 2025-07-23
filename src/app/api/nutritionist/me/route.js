@@ -54,38 +54,80 @@ export async function PUT(request) {
 
     // Get update data
     const body = await request.json()
-    const { name, specialization, licenseNumber, phone, address } = body
+    const { name, specialization, licenseNumber, phone, address, currentPassword, newPassword, confirmPassword } = body
 
-    // Update nutritionist profile
-    const updated = await Nutritionist.updateProfile(decoded.nutritionistId, {
-      name,
-      specialization,
-      licenseNumber,
-      phone,
-      address,
-    })
+    // Fetch the nutritionist from DB to get the stored password hash for verification
+    const nutritionistInDb = await Nutritionist.findByEmail(decoded.email)
 
-    if (!updated) {
-      return NextResponse.json({ error: "Failed to update profile" }, { status: 400 })
+    if (!nutritionistInDb) {
+      return NextResponse.json({ error: "Nutritionist not found" }, { status: 404 })
     }
 
-    // Get updated nutritionist data
-    const nutritionist = await Nutritionist.findById(decoded.nutritionistId)
+    // Handle password change if newPassword is provided (or any password field is filled)
+    if (currentPassword || newPassword || confirmPassword) {
+      // Check if currentPassword is provided
+      if (!currentPassword) {
+        return NextResponse.json({ error: "You must enter your current password to change it." }, { status: 400 })
+      }
+
+      // Verify current password
+      const isCurrentPasswordCorrect = await Nutritionist.verifyPassword(currentPassword, nutritionistInDb.password)
+      if (!isCurrentPasswordCorrect) {
+        return NextResponse.json({ error: "La contraseña actual es incorrecta." }, { status: 401 })
+      }
+
+      // Validate new password
+      if (!newPassword) {
+        return NextResponse.json({ error: "You must enter a new password." }, { status: 400 })
+      }
+      if (newPassword.length < 6) {
+        return NextResponse.json({ error: "New password must be at least 6 characters long." }, { status: 400 })
+      }
+      if (newPassword === currentPassword) {
+        return NextResponse.json({ error: "New password cannot be the same as the current password." }, { status: 400 })
+      }
+      if (newPassword !== confirmPassword) {
+        return NextResponse.json({ error: "Passwords do not match." }, { status: 400 })
+      }
+
+      // Update password in DB
+      const passwordUpdated = await Nutritionist.updatePassword(nutritionistInDb._id, newPassword)
+      if (!passwordUpdated) {
+        return NextResponse.json({ error: "Failed to update password" }, { status: 500 })
+      }
+    }
+
+    // Prepare data for profile update (excluding password fields as they are handled above)
+    const safeUpdateData = { name, specialization, licenseNumber, phone, address }
+
+    // Only update profile fields if they are actually provided and different from current DB values
+    const fieldsToUpdate = {}
+    for (const key in safeUpdateData) {
+      if (safeUpdateData[key] !== undefined && safeUpdateData[key] !== nutritionistInDb[key]) {
+        fieldsToUpdate[key] = safeUpdateData[key]
+      }
+    }
+
+    let profileUpdated = false
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      profileUpdated = await Nutritionist.updateProfile(nutritionistInDb._id, fieldsToUpdate)
+      if (!profileUpdated) {
+        return NextResponse.json({ error: "Failed to update profile" }, { status: 400 })
+      }
+    }
+
+    // Get updated nutritionist data (without password)
+    const updatedNutritionist = await Nutritionist.findById(nutritionistInDb._id)
 
     return NextResponse.json({
       message: "Profile updated successfully",
-      nutritionist: {
-        id: nutritionist._id,
-        name: nutritionist.name,
-        email: nutritionist.email,
-        specialization: nutritionist.specialization,
-        licenseNumber: nutritionist.licenseNumber,
-        phone: nutritionist.phone,
-        address: nutritionist.address,
-      },
+      nutritionist: updatedNutritionist,
     })
   } catch (error) {
     console.error("Update nutritionist error:", error)
-    return NextResponse.json({ error: "Invalid token or update failed" }, { status: 401 })
+    if (error.name === "JsonWebTokenError") {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    }
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -14,6 +14,7 @@ export class Nutritionist {
     this.neighborhood = data.neighborhood
     this.streetNumber = data.streetNumber
     this.licenseNumber = data.licenseNumber || null
+    this.licenseFileUrl = data.licenseFileUrl || null
     this.specialization = data.specialization || null
     this.createdAt = data.createdAt || new Date()
     this.isActive = data.isActive !== undefined ? data.isActive : true
@@ -114,6 +115,26 @@ export class Nutritionist {
       const result = await db
         .collection("Nutritionist")
         .updateOne({ _id: new ObjectId(id) }, { $set: { ...safeUpdateData, updatedAt: new Date() } })
+
+      return result.modifiedCount > 0
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Update nutritionist password
+  static async updatePassword(id, newPassword) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
+
+      // New password
+      const saltRounds = 12
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds)
+
+      const result = await db
+        .collection("Nutritionist")
+        .updateOne({ _id: new ObjectId(id) }, { $set: { password: hashedPassword, updatedAt: new Date() } })
 
       return result.modifiedCount > 0
     } catch (error) {

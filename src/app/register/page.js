@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Check } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -476,28 +477,26 @@ export default function RegisterPage() {
       <p className="mt-2 text-center text-sm text-gray-600">Add your professional credentials (optional)</p>
 
       <div className="space-y-6 mt-8">
-
         <div>
           <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
             License Number *
           </label>
           <div className="mt-1">
-              <input
-                id="licenseNumber"
-                name="licenseNumber"
-                type="text"
-                required
-                value={formData.licenseNumber}
-                onChange={handleChange}
-                className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 ${
-                  fieldErrors.licenseNumber ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="12345678"
-              />
+            <input
+              id="licenseNumber"
+              name="licenseNumber"
+              type="text"
+              required
+              value={formData.licenseNumber}
+              onChange={handleChange}
+              className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 ${
+                fieldErrors.licenseNumber ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="12345678"
+            />
             {fieldErrors.licenseNumber && <p className="mt-1 text-sm text-red-600">{fieldErrors.licenseNumber}</p>}
           </div>
         </div>
-        
 
         <div>
           <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
@@ -562,7 +561,13 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="flex justify-center">
             <div className="flex items-center">
-              <img src="/logo1.png" alt="FitBalance Logo" className="h-12 w-12 mr-2 rounded-2xl" />
+              <Image
+                src="/logo1.png"
+                alt="FitBalance Logo"
+                width={48}
+                height={48}
+                className="h-12 w-12 mr-2 rounded-2xl"
+              />
               <span className="ml-2 text-2xl font-bold text-green-600">FitBalance</span>
             </div>
           </div>
