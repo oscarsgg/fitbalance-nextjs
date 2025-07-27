@@ -6,10 +6,8 @@ export function middleware(request) {
   const token = request.cookies.get("token")?.value
 
   // Define protected routes
-  const protectedRoutes = ["/dashboard"]
+  const protectedRoutes = ["/dashboard", "/schedule", "/patients", "/appointments", "/profile"]
   const authRoutes = ["/login", "/register"]
-  // Add more protected routes
-  protectedRoutes.push("/schedule", "/patients", "/appointments")
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
   const isAuthRoute = authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
@@ -37,5 +35,13 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register", "/schedule/:path*", "/patients/:path*", "/appointments/:path*"],
+  matcher: [
+    "/dashboard", 
+    "/login", 
+    "/register", 
+    "/schedule/:path*", 
+    "/patients/:path*", 
+    "/appointments/:path*", 
+    "/profile"],
 }
+

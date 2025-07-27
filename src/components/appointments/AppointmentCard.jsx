@@ -79,7 +79,6 @@ export default function AppointmentCard({ appointment, onUpdate }) {
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="font-semibold text-gray-900">{appointment.appointment_time}</span>
-              <span className="text-sm text-gray-500">({appointment.duration_minutes} min)</span>
             </div>
             <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(appointment.status)}`}>
               {appointment.status.replace("_", " ").toUpperCase()}

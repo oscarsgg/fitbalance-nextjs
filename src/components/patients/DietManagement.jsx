@@ -567,11 +567,10 @@ export default function DietManagement({ patientId }) {
                 type="number"
                 value={weeklyPlan?.dailyCalories || ""}
                 onChange={(e) => setWeeklyPlan({ ...weeklyPlan, dailyCalories: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  validationErrors.some((error) => error.includes("calories"))
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("calories"))
                     ? "border-red-300 focus:ring-red-500"
                     : "border-gray-300 focus:ring-green-500"
-                }`}
+                  }`}
                 required
               />
             </div>
@@ -583,11 +582,10 @@ export default function DietManagement({ patientId }) {
                 type="number"
                 value={weeklyPlan?.protein || ""}
                 onChange={(e) => setWeeklyPlan({ ...weeklyPlan, protein: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  validationErrors.some((error) => error.includes("Protein"))
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("Protein"))
                     ? "border-red-300 focus:ring-red-500"
                     : "border-gray-300 focus:ring-green-500"
-                }`}
+                  }`}
                 required
               />
             </div>
@@ -599,11 +597,10 @@ export default function DietManagement({ patientId }) {
                 type="number"
                 value={weeklyPlan?.carbs || ""}
                 onChange={(e) => setWeeklyPlan({ ...weeklyPlan, carbs: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  validationErrors.some((error) => error.includes("Carbs"))
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("Carbs"))
                     ? "border-red-300 focus:ring-red-500"
                     : "border-gray-300 focus:ring-green-500"
-                }`}
+                  }`}
                 required
               />
             </div>
@@ -615,11 +612,10 @@ export default function DietManagement({ patientId }) {
                 type="number"
                 value={weeklyPlan?.fat || ""}
                 onChange={(e) => setWeeklyPlan({ ...weeklyPlan, fat: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  validationErrors.some((error) => error.includes("Fats"))
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("Fats"))
                     ? "border-red-300 focus:ring-red-500"
                     : "border-gray-300 focus:ring-green-500"
-                }`}
+                  }`}
                 required
               />
             </div>
@@ -699,9 +695,13 @@ export default function DietManagement({ patientId }) {
               type="date"
               value={formatDateForInput(selectedWeekStart)}
               onChange={(e) => {
-                const [year, month, day] = e.target.value.split("-")
+                const value = e.target.value
+                if (!value) return
+                const [year, month, day] = value.split("-")
                 const date = new Date(year, month - 1, day)
-                setSelectedWeekStart(getMonday(date))
+                if (!isNaN(date)) {
+                  setSelectedWeekStart(getMonday(date))
+                }
               }}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               required
@@ -744,25 +744,22 @@ export default function DietManagement({ patientId }) {
                 <div
                   key={day.key}
                   onClick={() => setSelectedDay(day.key)}
-                  className={`flex group hover:bg-green-500 hover:shadow-lg rounded-lg mx-1 transition-all duration-300 cursor-pointer justify-center w-16 ${
-                    isSelected ? "bg-green-600 shadow-lg" : ""
-                  } ${hasError ? "ring-2 ring-red-400" : ""}`}
+                  className={`flex group hover:bg-green-500 hover:shadow-lg rounded-lg mx-1 transition-all duration-300 cursor-pointer justify-center w-16 ${isSelected ? "bg-green-600 shadow-lg" : ""
+                    } ${hasError ? "ring-2 ring-red-400" : ""}`}
                 >
                   <div className="flex items-center px-4 py-4">
                     <div className="text-center">
                       <p
-                        className={`text-sm transition-all duration-300 ${
-                          isSelected ? "text-gray-100" : "text-gray-900 group-hover:text-gray-100"
-                        }`}
+                        className={`text-sm transition-all duration-300 ${isSelected ? "text-gray-100" : "text-gray-900 group-hover:text-gray-100"
+                          }`}
                       >
                         {day.label.slice(0, 3)}
                       </p>
                       <p
-                        className={`mt-3 transition-all duration-300 ${
-                          isSelected
+                        className={`mt-3 transition-all duration-300 ${isSelected
                             ? "text-gray-100 font-bold"
                             : "text-gray-900 group-hover:text-gray-100 group-hover:font-bold"
-                        }`}
+                          }`}
                       >
                         {date.getDate()}
                       </p>

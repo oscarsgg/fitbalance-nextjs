@@ -1,6 +1,8 @@
 import { ObjectId } from "mongodb"
 import clientPromise from "@/lib/mongodb"
 
+const DEBUG = process.env.DEBUG_LOGS === "false"
+
 export class Appointment {
   constructor(data) {
     this.nutritionist_id = data.nutritionist_id
@@ -10,7 +12,6 @@ export class Appointment {
     this.patient_phone = data.patient_phone || null
     this.appointment_date = new Date(data.appointment_date) // ISO string
     this.appointment_time = data.appointment_time // "HH:MM" format
-    this.duration_minutes = data.duration_minutes || 60
     this.appointment_type = data.appointment_type // "initial", "follow_up", "consultation"
     this.status = data.status || "scheduled" // "scheduled", "completed", "cancelled", "no_show"
     this.notes = data.notes || ""
@@ -29,7 +30,6 @@ export class Appointment {
         appointmentData.nutritionist_id,
         appointmentData.appointment_date,
         appointmentData.appointment_time,
-        appointmentData.duration_minutes || 60,
       )
 
       if (conflictCheck.hasConflict) {
@@ -43,7 +43,9 @@ export class Appointment {
         appointment.nutritionist_id = new ObjectId(appointment.nutritionist_id)
       }
 
-      console.log("Guardando cita en DB:", JSON.stringify(appointment, null, 2))
+       if (DEBUG) {
+        console.log("Guardando cita en DB:", JSON.stringify(appointment, null, 2))
+      }
       const result = await db.collection("Appointments").insertOne(appointment)
 
       const createdAppointment = {
@@ -51,7 +53,9 @@ export class Appointment {
         ...appointment,
       }
 
-      console.log("Cita guardada exitosamente con ID:", result.insertedId)
+      if (DEBUG) {
+        console.log("Cita guardada exitosamente con ID:", result.insertedId)
+      }
       return createdAppointment
     } catch (error) {
       console.error("Error al crear cita:", error)
@@ -60,7 +64,7 @@ export class Appointment {
   }
 
   // Check for time conflicts
-  static async checkTimeConflict(nutritionistId, date, time, duration) {
+  static async checkTimeConflict(nutritionistId, date, time) {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
@@ -121,7 +125,9 @@ export class Appointment {
 
       const query = { nutritionist_id: nutritionistObjectId }
 
-      console.log("Construyendo query con nutritionist_id:", nutritionistId)
+      if (DEBUG) {
+        console.log("Construyendo query con nutritionist_id:", nutritionistId)
+      }
 
       // Add date filters if provided
       if (filters.startDate && filters.endDate) {
@@ -129,7 +135,9 @@ export class Appointment {
           $gte: filters.startDate,
           $lte: filters.endDate,
         }
-        console.log("Filtro de rango de fechas:", filters.startDate, "a", filters.endDate)
+         if (DEBUG) {
+          console.log("Filtro de rango de fechas:", filters.startDate, "a", filters.endDate)
+        }
       } else if (filters.date) {
         const start = new Date(filters.date)
         const end = new Date(filters.date)
@@ -140,16 +148,22 @@ export class Appointment {
           $lt: end,
         }
 
-        console.log("Filtro de fecha específica como rango:", start.toISOString(), "a", end.toISOString())
+        if (DEBUG) {
+          console.log("Filtro de fecha específica como rango:", start.toISOString(), "a", end.toISOString())
+        }
       }
 
       // Add status filter if provided
       if (filters.status) {
         query.status = filters.status
-        console.log("Filtro de estado:", filters.status)
+        if (DEBUG) {
+          console.log("Filtro de estado:", filters.status)
+        }
       }
 
-      console.log("Query final para MongoDB:", JSON.stringify(query, null, 2))
+      if (DEBUG) {
+        console.log("Query final para MongoDB:", JSON.stringify(query, null, 2))
+      }
 
       // Primero, vamos a ver todas las citas de este nutricionista sin filtros
       const allAppointments = await db
@@ -157,9 +171,13 @@ export class Appointment {
         .find({ nutritionist_id: nutritionistObjectId })
         .toArray()
 
-      console.log("Todas las citas del nutricionista:", allAppointments.length)
+      if (DEBUG) {
+        console.log("Todas las citas del nutricionista:", allAppointments.length)
+      }
       if (allAppointments.length > 0) {
-        console.log("Ejemplo de cita en DB:", JSON.stringify(allAppointments[0], null, 2))
+        if (DEBUG) {
+          console.log("Ejemplo de cita en DB:", JSON.stringify(allAppointments[0], null, 2))
+        }
       }
 
       // Ahora hacer la consulta con filtros
@@ -169,8 +187,9 @@ export class Appointment {
         .sort({ appointment_date: 1, appointment_time: 1 })
         .toArray()
 
-      console.log("Citas encontradas con filtros:", appointments.length)
-
+      if (DEBUG) {
+        console.log("Citas encontradas con filtros:", appointments.length)
+      }
       return appointments
     } catch (error) {
       console.error("Error al buscar citas:", error)

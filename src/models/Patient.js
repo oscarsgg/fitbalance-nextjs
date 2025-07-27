@@ -2,6 +2,8 @@ import { ObjectId } from "mongodb"
 import clientPromise from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 
+const DEBUG = process.env.DEBUG_LOGS === "true"
+
 export class Patient {
   constructor(data) {
     this.username = data.username
@@ -125,7 +127,9 @@ export class Patient {
         nutritionist_id: new ObjectId(nutritionistId),
       });
 
-      console.log("nutritionistId:", nutritionistId)
+       if (DEBUG) {
+        console.log("nutritionistId:", nutritionistId)
+      }
 
       return count;
     } catch (error) {

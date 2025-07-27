@@ -48,7 +48,7 @@ export default function HorizontalCard() {
         className="m-0 w-2/5 shrink-0 rounded-r-none"
       >
         <img
-          src="/tech-logo.jpg"
+          src="/card-image.png"
           alt="card-image"
           className="h-full w-full object-cover"
         />
@@ -76,7 +76,7 @@ export default function HorizontalCard() {
             color="blue-gray"
             className="mb-2 text-base md:text-lg lg:text-2xl"
         >
-            {`Your lastest changes`}
+            {`Your latest changes`}
         </Typography>
 
         {!loading && (

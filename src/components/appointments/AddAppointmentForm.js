@@ -12,7 +12,6 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
     patient_phone: "",
     appointment_date: "",
     appointment_time: "",
-    duration_minutes: 60,
     appointment_type: "",
     notes: "",
   })
@@ -194,7 +193,6 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
       patient_phone: "",
       appointment_date: "",
       appointment_time: "",
-      duration_minutes: 60,
       appointment_type: "",
       notes: "",
     })
@@ -488,25 +486,6 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   <option value="consultation">General Consultation</option>
                   <option value="nutrition_plan">Nutrition Plan Review</option>
                   <option value="progress_check">Progress Check</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="duration_minutes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration (minutes)
-                </label>
-                <select
-                  id="duration_minutes"
-                  name="duration_minutes"
-                  value={formData.duration_minutes}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value={30}>30 minutes</option>
-                  <option value={45}>45 minutes</option>
-                  <option value={60}>60 minutes</option>
-                  <option value={90}>90 minutes</option>
-                  <option value={120}>120 minutes</option>
                 </select>
               </div>
 

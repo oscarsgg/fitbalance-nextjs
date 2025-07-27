@@ -25,7 +25,6 @@ export async function POST(request) {
       patient_phone,
       appointment_date,
       appointment_time,
-      duration_minutes,
       appointment_type,
       notes,
     } = body
@@ -73,7 +72,6 @@ export async function POST(request) {
       patient_phone,
       appointment_date,
       appointment_time,
-      duration_minutes: duration_minutes || 60,
       appointment_type,
       notes,
     }

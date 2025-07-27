@@ -2,6 +2,8 @@ import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { Food } from "./Food"
 
+const DEBUG = process.env.DEBUG_LOGS === "false"
+
 export class WeeklyPlan {
   static async create(planData) {
     try {
@@ -32,7 +34,12 @@ export class WeeklyPlan {
         updated_at: new Date(),
       }
 
-      console.log("Creating weekly plan with processed data:", JSON.stringify(processedData, null, 2))
+      if (DEBUG) {
+        console.log(
+          "Creating weekly plan with processed data:",
+          JSON.stringify(processedData, null, 2),
+        )
+      }
 
       const result = await collection.insertOne(processedData)
 
@@ -52,7 +59,14 @@ export class WeeklyPlan {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
-      console.log("Searching for plan with patient_id:", patientId, "week_start:", weekStart)
+      if (DEBUG) {
+        console.log(
+          "Searching for plan with patient_id:",
+          patientId,
+          "week_start:",
+          weekStart,
+        )
+      }
 
       const plan = await db.collection("WeeklyPlan").findOne({
         patient_id: new ObjectId(patientId),
@@ -60,17 +74,25 @@ export class WeeklyPlan {
       })
 
       if (!plan) {
-        console.log("No plan found")
+        if (DEBUG) {
+          console.log("No plan found")
+        }
         return null
       }
 
-      console.log("Found plan with meals:", plan.meals?.length || 0)
+      if (DEBUG) {
+        console.log("Found plan with meals:", plan.meals?.length || 0)
+      }
 
       // Enriquecer con detalles de alimentos si hay meals
       if (plan.meals && Array.isArray(plan.meals)) {
-        console.log("Enriching meals with food details...")
+         if (DEBUG) {
+          console.log("Enriching meals with food details...")
+        }
         plan.meals = await this.enrichMealsWithFoodDetails(plan.meals)
-        console.log("Meals enriched successfully")
+        if (DEBUG) {
+          console.log("Meals enriched successfully")
+        }
       }
 
       return {
@@ -86,16 +108,22 @@ export class WeeklyPlan {
 
   static async enrichMealsWithFoodDetails(meals) {
     try {
-      console.log("Starting meal enrichment for", meals.length, "meals")
+      if (DEBUG) {
+        console.log("Starting meal enrichment for", meals.length, "meals")
+      }
 
       const allFoodIds = new Set()
 
       // Recopilar todos los food_ids únicos
       meals.forEach((meal, mealIndex) => {
-        console.log(`Processing meal ${mealIndex}:`, meal.day, meal.type)
+         if (DEBUG) {
+          console.log(`Processing meal ${mealIndex}:`, meal.day, meal.type)
+        }
         if (meal.foods && Array.isArray(meal.foods)) {
           meal.foods.forEach((food, foodIndex) => {
-            console.log(`  Food ${foodIndex}:`, food.food_id)
+            if (DEBUG) {
+              console.log(`  Food ${foodIndex}:`, food.food_id)
+            }
             if (food.food_id) {
               // Manejar tanto ObjectId como string
               const foodIdStr = food.food_id instanceof ObjectId ? food.food_id.toString() : food.food_id.toString()
@@ -105,34 +133,47 @@ export class WeeklyPlan {
         }
       })
 
-      console.log("Unique food IDs to fetch:", Array.from(allFoodIds))
+       if (DEBUG) {
+        console.log("Unique food IDs to fetch:", Array.from(allFoodIds))
+      }
+
 
       if (allFoodIds.size === 0) {
-        console.log("No food IDs found, returning original meals")
+        if (DEBUG) {
+          console.log("No food IDs found, returning original meals")
+        }
         return meals
       }
 
       // Obtener detalles de todos los alimentos
       const foodDetails = await Food.findByIds(Array.from(allFoodIds))
-      console.log("Food details fetched:", foodDetails.length)
+       if (DEBUG) {
+        console.log("Food details fetched:", foodDetails.length)
+      }
 
       // Crear mapa para búsqueda rápida
       const foodMap = new Map()
       foodDetails.forEach((food) => {
         foodMap.set(food._id.toString(), food)
-        console.log(`Mapped food: ${food._id} -> ${food.name}`)
+        if (DEBUG) {
+          console.log(`Mapped food: ${food._id} -> ${food.name}`)
+        }
       })
 
       // Enriquecer las comidas con detalles
       const enrichedMeals = meals.map((meal, mealIndex) => {
-        console.log(`Enriching meal ${mealIndex}:`, meal.day, meal.type)
+        if (DEBUG) {
+          console.log(`Enriching meal ${mealIndex}:`, meal.day, meal.type)
+        }
 
         const enrichedFoods = meal.foods
           ? meal.foods.map((food, foodIndex) => {
               const foodIdStr = food.food_id instanceof ObjectId ? food.food_id.toString() : food.food_id.toString()
               const details = foodMap.get(foodIdStr)
 
-              console.log(`  Food ${foodIndex}: ${foodIdStr} -> ${details ? details.name : "NOT FOUND"}`)
+              if (DEBUG) {
+                console.log(`  Food ${foodIndex}: ${foodIdStr} -> ${details ? details.name : "NOT FOUND"}`)
+              }
 
               return {
                 ...food,
@@ -150,7 +191,9 @@ export class WeeklyPlan {
         }
       })
 
-      console.log("Meal enrichment completed successfully")
+       if (DEBUG) {
+        console.log("Meal enrichment completed successfully")
+      }
       return enrichedMeals
     } catch (error) {
       console.error("Error enriching meals with food details:", error)
@@ -179,7 +222,9 @@ export class WeeklyPlan {
         throw new Error("Invalid plan ID format")
       }
 
-      console.log("Update data received:", JSON.stringify(updateData, null, 2))
+      if (DEBUG) {
+        console.log("Update data received:", JSON.stringify(updateData, null, 2))
+      }
 
       // Procesar meals para cumplir con el esquema si están presentes
       let processedMeals = null
@@ -229,7 +274,12 @@ export class WeeklyPlan {
         processedData.meals = processedMeals
       }
 
-      console.log("Processed data for update:", JSON.stringify(processedData, null, 2))
+       if (DEBUG) {
+        console.log(
+          "Processed data for update:",
+          JSON.stringify(processedData, null, 2),
+        )
+      }
 
       const result = await collection.updateOne({ _id: new ObjectId(planId) }, { $set: processedData })
 
