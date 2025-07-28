@@ -119,7 +119,12 @@ export default function Page() {
                   Dashboard
                 </h1>
                 <p className="text-base sm:text-lg md:text-xl text-gray-700">
-                  Welcome back, {nutritionist?.name || "Doctor"}
+                  Welcome back, Dr.{" "}
+                  {nutritionist
+                    ? [nutritionist.name, nutritionist.lastName, nutritionist.secondLastName]
+                        .filter(Boolean)
+                        .join(" ")
+                    : "Doctor"}
                 </p>
               </div>
               <div className="flex items-center space-x-4">

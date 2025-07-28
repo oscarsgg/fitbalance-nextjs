@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb"
 import clientPromise from "@/lib/mongodb"
 
-const DEBUG = process.env.DEBUG_LOGS === "false"
+const DEBUG = process.env.DEBUG_LOGS === "true"
 
 export class Appointment {
   constructor(data) {
@@ -12,9 +12,9 @@ export class Appointment {
     this.patient_phone = data.patient_phone || null
     this.appointment_date = new Date(data.appointment_date) // ISO string
     this.appointment_time = data.appointment_time // "HH:MM" format
-    this.appointment_type = data.appointment_type // "initial", "follow_up", "consultation"
-    this.status = data.status || "scheduled" // "scheduled", "completed", "cancelled", "no_show"
-    this.notes = data.notes || ""
+    this.appointment_type = data.appointment_type || null // "initial", "follow_up", "consultation"
+    this.status = data.status || "scheduled" // "scheduled", "completed", "cancelled"
+    this.notes = data.notes || null
     this.created_at = data.created_at ? new Date(data.created_at) : new Date()
     this.updated_at = data.updated_at ? new Date(data.updated_at) : new Date()
   }
@@ -43,9 +43,15 @@ export class Appointment {
         appointment.nutritionist_id = new ObjectId(appointment.nutritionist_id)
       }
 
-       if (DEBUG) {
+      // Asegurar que patient_id sea ObjectId si no es null
+      if (appointment.patient_id && typeof appointment.patient_id === "string") {
+        appointment.patient_id = new ObjectId(appointment.patient_id)
+      }
+
+      if (DEBUG) {
         console.log("Guardando cita en DB:", JSON.stringify(appointment, null, 2))
       }
+
       const result = await db.collection("Appointments").insertOne(appointment)
 
       const createdAppointment = {
@@ -72,7 +78,7 @@ export class Appointment {
       // Convert time to minutes for easier calculation
       const [hours, minutes] = time.split(":").map(Number)
       const appointmentStart = hours * 60 + minutes
-      const appointmentEnd = appointmentStart + duration
+      const appointmentEnd = appointmentStart + 60 // Default 60 minutes
 
       // Asegurar que nutritionistId sea ObjectId
       const nutritionistObjectId = typeof nutritionistId === "string" ? new ObjectId(nutritionistId) : nutritionistId
@@ -82,7 +88,7 @@ export class Appointment {
         .collection("Appointments")
         .find({
           nutritionist_id: nutritionistObjectId,
-          appointment_date: date,
+          appointment_date: new Date(date),
           status: { $in: ["scheduled", "completed"] }, // Don't check cancelled appointments
         })
         .toArray()
@@ -91,7 +97,7 @@ export class Appointment {
       for (const existing of existingAppointments) {
         const [existingHours, existingMinutes] = existing.appointment_time.split(":").map(Number)
         const existingStart = existingHours * 60 + existingMinutes
-        const existingEnd = existingStart + (existing.duration_minutes || 60)
+        const existingEnd = existingStart + 60 // Default 60 minutes
 
         // Check if times overlap
         if (
@@ -135,7 +141,7 @@ export class Appointment {
           $gte: filters.startDate,
           $lte: filters.endDate,
         }
-         if (DEBUG) {
+        if (DEBUG) {
           console.log("Filtro de rango de fechas:", filters.startDate, "a", filters.endDate)
         }
       } else if (filters.date) {
@@ -163,21 +169,6 @@ export class Appointment {
 
       if (DEBUG) {
         console.log("Query final para MongoDB:", JSON.stringify(query, null, 2))
-      }
-
-      // Primero, vamos a ver todas las citas de este nutricionista sin filtros
-      const allAppointments = await db
-        .collection("Appointments")
-        .find({ nutritionist_id: nutritionistObjectId })
-        .toArray()
-
-      if (DEBUG) {
-        console.log("Todas las citas del nutricionista:", allAppointments.length)
-      }
-      if (allAppointments.length > 0) {
-        if (DEBUG) {
-          console.log("Ejemplo de cita en DB:", JSON.stringify(allAppointments[0], null, 2))
-        }
       }
 
       // Ahora hacer la consulta con filtros
@@ -215,7 +206,7 @@ export class Appointment {
 
       const updateData = {
         status,
-        updated_at: new Date(), // Mantener como Date, no string
+        updated_at: new Date(),
       }
 
       if (notes !== null) {

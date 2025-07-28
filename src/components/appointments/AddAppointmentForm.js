@@ -1,154 +1,146 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Calendar, Clock, User, AlertCircle, Check, Search } from "lucide-react"
+import { X, User, Mail, Target, AlertCircle, Check } from "lucide-react"
 
-export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
+export default function AddPatientForm({ isOpen, onClose, onSuccess, prefilledData = null }) {
   const [formData, setFormData] = useState({
-    patient_type: "new", // "existing" or "new"
-    patient_id: "",
-    patient_name: "",
-    patient_email: "",
-    patient_phone: "",
-    appointment_date: "",
-    appointment_time: "",
-    appointment_type: "",
-    notes: "",
+    nombre: "",
+    edad: "",
+    sexo: "",
+    altura_cm: "",
+    peso_kg: "",
+    email: "",
+    telefono: "",
+    objetivo: "",
+    alergias: "",
+    restricciones_alimentarias: "",
+    notas: "",
   })
-  const [patients, setPatients] = useState([])
-  const [filteredPatients, setFilteredPatients] = useState([])
-  const [availableSlots, setAvailableSlots] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(null)
   const [showErrorModal, setShowErrorModal] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
 
-  // Load patients when component mounts
+  // Effect to populate form with prefilled data
   useEffect(() => {
-    if (isOpen) {
-      loadPatients()
+    if (prefilledData && isOpen) {
+      console.log("Prefilling form with data:", prefilledData)
+      setFormData((prevData) => ({
+        ...prevData,
+        nombre: prefilledData.nombre || "",
+        email: prefilledData.email || "",
+        telefono: prefilledData.telefono || "",
+        // Add a note indicating this came from an appointment
+        notas: prefilledData.nombre ? `Patient registered from appointment for ${prefilledData.nombre}` : "",
+      }))
+    }
+  }, [prefilledData, isOpen])
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        nombre: "",
+        edad: "",
+        sexo: "",
+        altura_cm: "",
+        peso_kg: "",
+        email: "",
+        telefono: "",
+        objetivo: "",
+        alergias: "",
+        restricciones_alimentarias: "",
+        notas: "",
+      })
+      setError("")
+      setSuccess(null)
+      setShowErrorModal(false)
     }
   }, [isOpen])
 
-  // Filter patients based on search term
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = patients.filter(
-        (patient) =>
-          patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          patient.username.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-      setFilteredPatients(filtered)
-    } else {
-      setFilteredPatients(patients)
-    }
-  }, [searchTerm, patients])
-
-  // Load available slots when date changes
-  useEffect(() => {
-    if (formData.appointment_date) {
-      loadAvailableSlots(formData.appointment_date)
-    }
-  }, [formData.appointment_date])
-
-  const loadPatients = async () => {
-    try {
-      const response = await fetch("/api/patients")
-      if (response.ok) {
-        const data = await response.json()
-        setPatients(data.patients)
-        setFilteredPatients(data.patients)
-      }
-    } catch (error) {
-      console.error("Error loading patients:", error)
-    }
+  // Email validation function
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
   }
 
-  const loadAvailableSlots = async (date) => {
-    try {
-      const response = await fetch(`/api/appointments/available-slots?date=${date}`)
-      if (response.ok) {
-        const data = await response.json()
-        setAvailableSlots(data.availableSlots)
-      } else {
-        setAvailableSlots([])
-      }
-    } catch (error) {
-      console.error("Error loading available slots:", error)
-      setAvailableSlots([])
-    }
+  // Phone validation function (supports various formats)
+  const isValidPhone = (phone) => {
+    if (!phone) return true // Phone is optional
+    // Remove all non-digit characters for validation
+    const cleanPhone = phone.replace(/\D/g, "")
+    // Accept phones with 10-15 digits
+    return cleanPhone.length >= 10 && cleanPhone.length <= 15
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
     setFormData({
       ...formData,
-      [name]: value,
+      [e.target.name]: e.target.value,
     })
     setError("")
-
-    // If patient type changes to new, clear patient selection
-    if (name === "patient_type" && value === "new") {
-      setFormData((prev) => ({
-        ...prev,
-        patient_id: "",
-        patient_name: "",
-        patient_email: "",
-        patient_phone: "",
-      }))
-      setSearchTerm("")
-    }
-  }
-
-  const handlePatientSelect = (patient) => {
-    setFormData({
-      ...formData,
-      patient_type: "existing",
-      patient_id: patient._id,
-      patient_name: patient.name,
-      patient_email: patient.email,
-      patient_phone: patient.phone || "",
-    })
-    setSearchTerm(patient.name)
   }
 
   const validateForm = () => {
-    if (!formData.patient_name.trim()) {
-      return "Patient name is required"
+    // Check required fields
+    if (!formData.nombre.trim()) {
+      return "Full Name is required"
     }
-    if (!formData.appointment_date) {
-      return "Appointment date is required"
+    if (!formData.edad) {
+      return "Age is required"
     }
-    if (!formData.appointment_time) {
-      return "Appointment time is required"
+    if (!formData.sexo) {
+      return "Gender is required"
     }
-    if (!formData.appointment_type) {
-      return "Appointment type is required"
+    if (!formData.altura_cm) {
+      return "Height is required"
     }
-
-    // Validate email if provided
-    if (formData.patient_email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(formData.patient_email)) {
-        return "Please enter a valid email address"
-      }
+    if (!formData.peso_kg) {
+      return "Weight is required"
     }
-
-    // Validate date is not in the past
-    const appointmentDateTime = new Date(`${formData.appointment_date}T${formData.appointment_time}`)
-    const now = new Date()
-    if (appointmentDateTime < now) {
-      return "Cannot schedule appointments in the past"
+    if (!formData.email.trim()) {
+      return "Email Address is required"
+    }
+    if (!formData.objetivo) {
+      return "Health Objective is required"
     }
 
-    return null
+    // Validate email format
+    if (!isValidEmail(formData.email)) {
+      return "Please enter a valid email address (example: user@domain.com)"
+    }
+
+    // Validate phone format if provided
+    if (formData.telefono && !isValidPhone(formData.telefono)) {
+      return "Please enter a valid phone number (10-15 digits, formats like +1-555-123-4567, (555) 123-4567, or 5551234567 are accepted)"
+    }
+
+    // Validate age range
+    const age = Number.parseInt(formData.edad)
+    if (age < 1 || age > 120) {
+      return "Please enter a valid age between 1 and 120"
+    }
+
+    // Validate height range
+    const height = Number.parseFloat(formData.altura_cm)
+    if (height < 50 || height > 250) {
+      return "Please enter a valid height between 50 and 250 cm"
+    }
+
+    // Validate weight range
+    const weight = Number.parseFloat(formData.peso_kg)
+    if (weight < 10 || weight > 500) {
+      return "Please enter a valid weight between 10 and 500 kg"
+    }
+
+    return null // No errors
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Client-side validation first
     const validationError = validateForm()
     if (validationError) {
       setError(validationError)
@@ -160,23 +152,71 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
     setError("")
 
     try {
-      const response = await fetch("/api/appointments", {
+      // Process arrays
+      const processedData = {
+        ...formData,
+        alergias: formData.alergias
+          ? formData.alergias
+              .split(",")
+              .map((item) => item.trim())
+              .filter((item) => item)
+          : [],
+        restricciones_alimentarias: formData.restricciones_alimentarias
+          ? formData.restricciones_alimentarias
+              .split(",")
+              .map((item) => item.trim())
+              .filter((item) => item)
+          : [],
+      }
+
+      console.log("Creating patient with data:", processedData)
+
+      const response = await fetch("/api/patients", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(processedData),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess(data.appointment)
+        console.log("Patient created successfully:", data.patient)
+
+        // If this patient was created from an appointment, update the appointment
+        if (prefilledData?.appointmentId && data.patient._id) {
+          console.log("Updating appointment with patient_id:", {
+            appointmentId: prefilledData.appointmentId,
+            patientId: data.patient._id,
+          })
+
+          try {
+            const updateResponse = await fetch(`/api/appointments/${prefilledData.appointmentId}/update-patient`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ patient_id: data.patient._id }),
+            })
+
+            if (updateResponse.ok) {
+              console.log("Successfully updated appointment with patient_id")
+            } else {
+              console.error("Failed to update appointment with patient_id")
+            }
+          } catch (updateError) {
+            console.error("Error updating appointment:", updateError)
+          }
+        }
+
+        setSuccess(data.patient)
       } else {
-        setError(data.error || "Failed to create appointment")
+        setError(data.error || "Failed to create patient")
         setShowErrorModal(true)
       }
     } catch (error) {
+      console.error("Network error creating patient:", error)
       setError("Network error. Please check your connection and try again.")
       setShowErrorModal(true)
     } finally {
@@ -186,18 +226,19 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
 
   const handleSuccessClose = () => {
     setFormData({
-      patient_type: "new",
-      patient_id: "",
-      patient_name: "",
-      patient_email: "",
-      patient_phone: "",
-      appointment_date: "",
-      appointment_time: "",
-      appointment_type: "",
-      notes: "",
+      nombre: "",
+      edad: "",
+      sexo: "",
+      altura_cm: "",
+      peso_kg: "",
+      email: "",
+      telefono: "",
+      objetivo: "",
+      alergias: "",
+      restricciones_alimentarias: "",
+      notas: "",
     })
     setSuccess(null)
-    setSearchTerm("")
     onSuccess && onSuccess()
     onClose()
   }
@@ -207,11 +248,6 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
     setError("")
   }
 
-  // Get minimum date (today)
-  const getMinDate = () => {
-    return new Date().toISOString().split("T")[0]
-  }
-
   if (!isOpen) return null
 
   // Error Modal
@@ -219,13 +255,13 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
     return (
       <div
         className="fixed inset-0 flex items-center justify-center p-4 z-50"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.66)" }}
       >
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Appointment Error</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Validation Error</h3>
           <div className="bg-red-50 rounded-lg p-4 mb-4">
             <p className="text-sm text-red-700">{error}</p>
           </div>
@@ -246,22 +282,32 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
     return (
       <div
         className="fixed inset-0 flex items-center justify-center p-4 z-50"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.66)" }}
       >
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Appointment Scheduled!</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Patient Created Successfully!</h3>
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <p className="text-sm text-gray-600 mb-2">Appointment Details:</p>
-            <p className="font-semibold text-gray-900">{success.patient_name}</p>
+            <p className="text-sm text-gray-600 mb-2">Patient Details:</p>
+            <p className="font-semibold text-gray-900">{success.name}</p>
             <p className="text-sm text-gray-600">
-              {new Date(success.appointment_date).toLocaleDateString()} at {success.appointment_time}
+              Username: <span className="font-mono font-semibold">{success.username}</span>
             </p>
-            <p className="text-sm text-gray-600 capitalize">{success.appointment_type.replace("_", " ")}</p>
+            <p className="text-sm text-gray-600">
+              Default Password:{" "}
+              <span className="font-mono font-semibold text-green-600">{success.defaultPassword}</span>
+            </p>
           </div>
-          <p className="text-sm text-gray-500 mb-4">The appointment has been added to your calendar.</p>
+          <p className="text-sm text-gray-500 mb-4">
+            The patient can use these credentials to access their mobile app.
+            {prefilledData?.appointmentId && (
+              <span className="block mt-2 text-green-600 font-medium">
+                ✓ Appointment has been linked to this patient.
+              </span>
+            )}
+          </p>
           <button
             onClick={handleSuccessClose}
             className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
@@ -283,12 +329,16 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-              <Calendar className="h-5 w-5 text-green-600" />
+            <div className="w-10 h-10 bg-gradient-to-br from-green-300 to-teal-400 rounded-lg flex items-center justify-center mr-3">
+              <User className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Schedule Appointment</h2>
-              <p className="text-sm text-gray-500">Create a new appointment</p>
+              <h2 className="text-xl font-bold text-gray-900">
+                {prefilledData ? "Register New Patient" : "Add New Patient"}
+              </h2>
+              <p className="text-sm text-gray-500">
+                {prefilledData ? "Complete patient registration from appointment" : "Create a new patient profile"}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -296,218 +346,253 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
           </button>
         </div>
 
+        {/* Prefilled Data Notice */}
+        {prefilledData && (
+          <div className="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="h-4 w-4 text-green-600" />
+              <p className="text-sm text-green-800">
+                Some information has been pre-filled from the appointment. Please complete the remaining fields.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Form - Scrollable */}
         <div className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Patient Selection */}
+              {/* Basic Information */}
               <div className="md:col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <User className="h-5 w-5 mr-2 text-green-600" />
-                  Patient Information
-                </h3>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Patient Type</label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="patient_type"
-                      value="existing"
-                      checked={formData.patient_type === "existing"}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    Existing Patient
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="patient_type"
-                      value="new"
-                      checked={formData.patient_type === "new"}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    New Patient
-                  </label>
-                </div>
-              </div>
-
-              {formData.patient_type === "existing" && (
-                <div className="md:col-span-2">
-                  <label htmlFor="patient_search" className="block text-sm font-medium text-gray-700 mb-1">
-                    Search Patient *
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      id="patient_search"
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Search by name, email, or username..."
-                    />
-                  </div>
-                  {searchTerm && filteredPatients.length > 0 && (
-                    <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg">
-                      {filteredPatients.slice(0, 5).map((patient) => (
-                        <button
-                          key={patient._id}
-                          type="button"
-                          onClick={() => handlePatientSelect(patient)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                        >
-                          <p className="font-medium text-gray-900">{patient.name}</p>
-                          <p className="text-sm text-gray-500">{patient.email}</p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {formData.patient_type === "new" && (
-                <>
-                  <div>
-                    <label htmlFor="patient_name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Patient Name *
-                    </label>
-                    <input
-                      id="patient_name"
-                      name="patient_name"
-                      type="text"
-                      required
-                      value={formData.patient_name}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="John Doe"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="patient_email" className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address
-                    </label>
-                    <input
-                      id="patient_email"
-                      name="patient_email"
-                      type="email"
-                      value={formData.patient_email}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="john@example.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="patient_phone" className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      id="patient_phone"
-                      name="patient_phone"
-                      type="tel"
-                      value={formData.patient_phone}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Appointment Details */}
-              <div className="md:col-span-2 mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Clock className="h-5 w-5 mr-2 text-green-600" />
-                  Appointment Details
+                  Basic Information
                 </h3>
               </div>
 
               <div>
-                <label htmlFor="appointment_date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date *
+                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
                 </label>
                 <input
-                  id="appointment_date"
-                  name="appointment_date"
-                  type="date"
+                  id="nombre"
+                  name="nombre"
+                  type="text"
                   required
-                  min={getMinDate()}
-                  value={formData.appointment_date}
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    prefilledData?.nombre ? "bg-green-50 border-green-300" : ""
+                  }`}
+                  placeholder="María González"
+                />
+                {prefilledData?.nombre && <p className="text-xs text-green-600 mt-1">Pre-filled from appointment</p>}
+              </div>
+
+              <div>
+                <label htmlFor="edad" className="block text-sm font-medium text-gray-700 mb-1">
+                  Age *
+                </label>
+                <input
+                  id="edad"
+                  name="edad"
+                  type="number"
+                  required
+                  min="1"
+                  max="120"
+                  value={formData.edad}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="34"
                 />
               </div>
 
               <div>
-                <label htmlFor="appointment_time" className="block text-sm font-medium text-gray-700 mb-1">
-                  Time *
+                <label htmlFor="sexo" className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender *
                 </label>
                 <select
-                  id="appointment_time"
-                  name="appointment_time"
+                  id="sexo"
+                  name="sexo"
                   required
-                  value={formData.appointment_time}
+                  value={formData.sexo}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="">Select time</option>
-                  {availableSlots.map((slot) => (
-                    <option key={slot} value={slot}>
-                      {slot}
-                    </option>
-                  ))}
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
                 </select>
-                {formData.appointment_date && availableSlots.length === 0 && (
-                  <p className="text-xs text-red-500 mt-1">No available slots for this date</p>
-                )}
               </div>
 
               <div>
-                <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 mb-1">
-                  Appointment Type *
+                <label htmlFor="altura_cm" className="block text-sm font-medium text-gray-700 mb-1">
+                  Height (cm) *
                 </label>
-                <select
-                  id="appointment_type"
-                  name="appointment_type"
+                <input
+                  id="altura_cm"
+                  name="altura_cm"
+                  type="number"
                   required
-                  value={formData.appointment_type}
+                  min="50"
+                  max="250"
+                  step="0.1"
+                  value={formData.altura_cm}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="">Select type</option>
-                  <option value="initial">Initial Consultation</option>
-                  <option value="follow_up">Follow-up</option>
-                  <option value="consultation">General Consultation</option>
-                  <option value="nutrition_plan">Nutrition Plan Review</option>
-                  <option value="progress_check">Progress Check</option>
-                </select>
+                  placeholder="165"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="peso_kg" className="block text-sm font-medium text-gray-700 mb-1">
+                  Weight (kg) *
+                </label>
+                <input
+                  id="peso_kg"
+                  name="peso_kg"
+                  type="number"
+                  required
+                  min="10"
+                  max="500"
+                  step="0.1"
+                  value={formData.peso_kg}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="68"
+                />
+              </div>
+
+              {/* Contact Information */}
+              <div className="md:col-span-2 mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Mail className="h-5 w-5 mr-2 text-green-600" />
+                  Contact Information
+                </h3>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address *
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    prefilledData?.email ? "bg-green-50 border-green-300" : ""
+                  }`}
+                  placeholder="maria.gonzalez@example.com"
+                />
+                {prefilledData?.email && <p className="text-xs text-green-600 mt-1">Pre-filled from appointment</p>}
+              </div>
+
+              <div>
+                <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  id="telefono"
+                  name="telefono"
+                  type="tel"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    prefilledData?.telefono ? "bg-green-50 border-green-300" : ""
+                  }`}
+                  placeholder="+1 (555) 123-4567"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional. Formats: +1-555-123-4567, (555) 123-4567, or 5551234567
+                </p>
+                {prefilledData?.telefono && <p className="text-xs text-green-600 mt-1">Pre-filled from appointment</p>}
+              </div>
+
+              {/* Health Information */}
+              <div className="md:col-span-2 mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Target className="h-5 w-5 mr-2 text-green-600" />
+                  Health Information
+                </h3>
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                <label htmlFor="objetivo" className="block text-sm font-medium text-gray-700 mb-1">
+                  Health Objective *
                 </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={3}
-                  value={formData.notes}
+                <select
+                  id="objetivo"
+                  name="objetivo"
+                  required
+                  value={formData.objetivo}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Additional notes for this appointment..."
+                >
+                  <option value="">Select objective</option>
+                  <option value="lose weight">Lose Weight</option>
+                  <option value="gain weight">Gain Weight</option>
+                  <option value="maintain weight">Maintain Weight</option>
+                  <option value="gain muscle mass">Gain Muscle Mass</option>
+                  <option value="improve health">Improve Health</option>
+                  <option value="control diabetes">Control Diabetes</option>
+                  <option value="control hypertension">Control Hypertension</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="alergias" className="block text-sm font-medium text-gray-700 mb-1">
+                  Allergies
+                </label>
+                <input
+                  id="alergias"
+                  name="alergias"
+                  type="text"
+                  value={formData.alergias}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="nuts, dairy, shellfish (separate with commas)"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="restricciones_alimentarias" className="block text-sm font-medium text-gray-700 mb-1">
+                  Dietary Restrictions
+                </label>
+                <input
+                  id="restricciones_alimentarias"
+                  name="restricciones_alimentarias"
+                  type="text"
+                  value={formData.restricciones_alimentarias}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="vegetarian, gluten-free, low sodium (separate with commas)"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="notas" className="block text-sm font-medium text-gray-700 mb-1">
+                  Additional Notes
+                </label>
+                <textarea
+                  id="notas"
+                  name="notas"
+                  rows={3}
+                  value={formData.notas}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Additional notes about the patient..."
                 />
               </div>
             </div>
           </form>
         </div>
 
-        {/* Footer - Fixed at bottom */}
+        {/* Footer  */}
         <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
           <button
             type="button"
@@ -520,17 +605,17 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
             type="submit"
             disabled={isLoading}
             onClick={handleSubmit}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-6 py-2 bg-gradient-to-br from-green-400 to-teal-500 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Scheduling...
+                {prefilledData ? "Registering..." : "Creating..."}
               </>
             ) : (
               <>
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Appointment
+                <User className="h-4 w-4 mr-2" />
+                {prefilledData ? "Register Patient" : "Create Patient"}
               </>
             )}
           </button>

@@ -25,6 +25,8 @@ export async function GET(request) {
       nutritionist: {
         id: nutritionist._id,
         name: nutritionist.name,
+        lastName: nutritionist.lastName,
+        secondLastName: nutritionist.secondLastName,
         email: nutritionist.email,
         specialization: nutritionist.specialization,
         licenseNumber: nutritionist.licenseNumber,
@@ -54,7 +56,7 @@ export async function PUT(request) {
 
     // Get update data
     const body = await request.json()
-    const { name, specialization, licenseNumber, phone, address, currentPassword, newPassword, confirmPassword } = body
+    const { name, lastName, secondLastName, specialization, licenseNumber, phone, address, currentPassword, newPassword, confirmPassword } = body
 
     // Fetch the nutritionist from DB to get the stored password hash for verification
     const nutritionistInDb = await Nutritionist.findByEmail(decoded.email)
@@ -98,7 +100,7 @@ export async function PUT(request) {
     }
 
     // Prepare data for profile update (excluding password fields as they are handled above)
-    const safeUpdateData = { name, specialization, licenseNumber, phone, address }
+    const safeUpdateData = { name, lastName, secondLastName, specialization, licenseNumber, phone, address }
 
     // Only update profile fields if they are actually provided and different from current DB values
     const fieldsToUpdate = {}

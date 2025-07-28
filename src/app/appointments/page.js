@@ -1,18 +1,23 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Calendar, Clock, Plus, Filter, Search, ChevronLeft, ChevronRight, Users } from "lucide-react"
+import { Calendar, Clock, Filter, Search, ChevronLeft, ChevronRight, Users } from "lucide-react"
 import Sidebar from "../../components/layout/Sidebar"
 import AddAppointmentForm from "../../components/appointments/AddAppointmentForm"
 import AppointmentCard from "../../components/appointments/AppointmentCard"
 import CalendarView from "../../components/appointments/CalendarView"
+import AddPatientForm from "../../components/patients/AddPatientForm"
 
 export default function AppointmentsPage() {
   const [view, setView] = useState("list") // "list" or "calendar"
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAddAppointment, setShowAddAppointment] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }))
+  const [showAddPatient, setShowAddPatient] = useState(false)
+  const [patientPrefilledData, setPatientPrefilledData] = useState(null)
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }),
+  )
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -65,6 +70,7 @@ export default function AppointmentsPage() {
               time: apt.appointment_time,
               patient: apt.patient_name,
               status: apt.status,
+              isNewPatient: !apt.patient_id,
             })
           })
         }
@@ -96,6 +102,22 @@ export default function AppointmentsPage() {
     }, 500)
   }
 
+  const handlePatientSuccess = () => {
+    console.log("Paciente registrado exitosamente, recargando citas...")
+    setShowAddPatient(false)
+    setPatientPrefilledData(null)
+    // Forzar recarga de citas para actualizar el estado de los pacientes
+    setTimeout(() => {
+      setRefreshTrigger((prev) => prev + 1)
+    }, 500)
+  }
+
+  const handleRegisterPatient = (patientData) => {
+    console.log("Registrando paciente desde cita:", patientData)
+    setPatientPrefilledData(patientData)
+    setShowAddPatient(true)
+  }
+
   const handleDateChange = (newDate) => {
     console.log("Cambiando fecha seleccionada a:", newDate)
     setSelectedDate(newDate)
@@ -114,21 +136,17 @@ export default function AppointmentsPage() {
     setSelectedDate(prevDay.toISOString().split("T")[0])
   }
 
-
   const handleNextDay = () => {
     const nextDate = new Date(selectedDate)
     nextDate.setDate(nextDate.getDate() + 1)
     setSelectedDate(nextDate.toISOString().split("T")[0])
   }
 
-
-
   const handleToday = () => {
     const today = new Date()
     const localDate = today.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
     setSelectedDate(localDate)
   }
-
 
   function parseLocalDate(dateString) {
     const [year, month, day] = dateString.split("-").map(Number)
@@ -145,7 +163,7 @@ export default function AppointmentsPage() {
 
   // Get appointments stats
   const todayAppointments = appointments.filter((apt) => apt.appointment_date === todayLocal)
-
+  const newPatientsCount = appointments.filter((apt) => !apt.patient_id).length
   const scheduledCount = appointments.filter((apt) => apt.status === "scheduled").length
   const completedCount = appointments.filter((apt) => apt.status === "completed").length
 
@@ -155,33 +173,29 @@ export default function AppointmentsPage() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="m-5 bg-white/65 rounded-xl min-h-screen">
-
           {/* Header */}
           <header className="px-7 pt-7 pb-4">
             <div className="flex flex-col sm:flex-row items-center justify-between">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-700">
-                  Appointments
-                </h1>
-                <p className="text-base sm:text-lg md:text-xl text-gray-700">
-                  Manage your appointment schedule
-                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-700">Appointments</h1>
+                <p className="text-base sm:text-lg md:text-xl text-gray-700">Manage your appointment schedule</p>
               </div>
               <div className="flex items-center space-x-4">
-
                 {/* View Toggle */}
                 <div className="flex bg-white/60 rounded-lg p-2 shadow-sm">
                   <button
                     onClick={() => handleViewChange("list")}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${view === "list" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                      }`}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      view === "list" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                    }`}
                   >
                     List
                   </button>
                   <button
                     onClick={() => handleViewChange("calendar")}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${view === "calendar" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                      }`}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      view === "calendar" ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                    }`}
                   >
                     Calendar
                   </button>
@@ -200,8 +214,7 @@ export default function AppointmentsPage() {
           {/* Stats Cards */}
           <div className="px-6 py-2">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* First one */}
-              {/* bg-white shadow-sm */}
+              {/* Todays Appointments */}
               <div className="bg-white/70 shadow-sm rounded-lg p-2">
                 <div className="flex items-center">
                   <Calendar className="h-8 w-8 text-green-600" />
@@ -211,7 +224,7 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
               </div>
-              {/* Second one */}
+              {/* Scheduled */}
               <div className="bg-blue-50 shadow-sm rounded-lg p-2">
                 <div className="flex items-center">
                   <Clock className="h-8 w-8 text-blue-600" />
@@ -221,23 +234,23 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
               </div>
-              {/* Third one */}
-              <div className="bg-purple-50 shadow-sm rounded-lg p-2">
+              {/* New Patients - Changed to green */}
+              <div className="bg-green-50 shadow-sm rounded-lg p-2">
                 <div className="flex items-center">
-                  <Users className="h-8 w-8 text-purple-600" />
+                  <Users className="h-8 w-8 text-green-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-purple-600">Completed</p>
-                    <p className="text-2xl font-bold text-purple-800">{completedCount}</p>
+                    <p className="text-sm font-medium text-green-600">New Patients</p>
+                    <p className="text-2xl font-bold text-green-800">{newPatientsCount}</p>
                   </div>
                 </div>
               </div>
-              {/* Fourth one */}
-              <div className="bg-orange-50 shadow-sm rounded-lg p-2">
+              {/* Completed */}
+              <div className="bg-purple-50 shadow-sm rounded-lg p-2">
                 <div className="flex items-center">
-                  <Filter className="h-8 w-8 text-orange-600" />
+                  <Filter className="h-8 w-8 text-purple-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-orange-600">Total This Period</p>
-                    <p className="text-2xl font-bold text-orange-800">{appointments.length}</p>
+                    <p className="text-sm font-medium text-purple-600">Completed</p>
+                    <p className="text-2xl font-bold text-purple-800">{completedCount}</p>
                   </div>
                 </div>
               </div>
@@ -346,6 +359,7 @@ export default function AppointmentsPage() {
                           key={appointment._id}
                           appointment={appointment}
                           onUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+                          onRegisterPatient={handleRegisterPatient}
                         />
                       ))}
                   </div>
@@ -369,6 +383,17 @@ export default function AppointmentsPage() {
             isOpen={showAddAppointment}
             onClose={() => setShowAddAppointment(false)}
             onSuccess={handleAppointmentSuccess}
+          />
+
+          {/* Add Patient Modal */}
+          <AddPatientForm
+            isOpen={showAddPatient}
+            onClose={() => {
+              setShowAddPatient(false)
+              setPatientPrefilledData(null)
+            }}
+            onSuccess={handlePatientSuccess}
+            prefilledData={patientPrefilledData}
           />
         </div>
       </div>
