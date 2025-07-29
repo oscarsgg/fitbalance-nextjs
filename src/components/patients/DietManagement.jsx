@@ -79,6 +79,8 @@ export default function DietManagement({ patientId }) {
     setWeeklyPlan({
       patient_id: patientId,
       week_start: selectedWeekStart,
+      weight_kg: patient?.weight_kg || 0,
+      height_cm: patient?.height_cm || 0,
       dailyCalories: 0,
       protein: 0,
       fat: 0,
@@ -146,6 +148,10 @@ export default function DietManagement({ patientId }) {
 
     const displayFormat = {
       ...plan,
+      weight_kg:
+        plan.weight_kg !== undefined ? plan.weight_kg : patient?.weight_kg || 0,
+      height_cm:
+        plan.height_cm !== undefined ? plan.height_cm : patient?.height_cm || 0,
       meals: getEmptyWeekMeals(),
     }
 
@@ -209,6 +215,15 @@ export default function DietManagement({ patientId }) {
 
   const validateForm = () => {
     const errors = []
+
+    // Validate measurements
+    if (!weeklyPlan?.weight_kg || weeklyPlan.weight_kg < 1) {
+      errors.push("Weight must be at least 1 kg")
+    }
+    if (!weeklyPlan?.height_cm || weeklyPlan.height_cm < 30) {
+      errors.push("Height must be at least 30 cm")
+    }
+
 
     // Validate macronutrients
     if (!weeklyPlan?.dailyCalories || weeklyPlan.dailyCalories <= 0) {
@@ -351,6 +366,8 @@ export default function DietManagement({ patientId }) {
       const dataToSave = {
         patient_id: patientId,
         week_start: selectedWeekStart,
+        weight_kg: Number(weeklyPlan.weight_kg) || 0,
+        height_cm: Number(weeklyPlan.height_cm) || 0,
         dailyCalories: weeklyPlan.dailyCalories || 0,
         protein: weeklyPlan.protein || 0,
         fat: weeklyPlan.fat || 0,
@@ -550,6 +567,53 @@ export default function DietManagement({ patientId }) {
             </ul>
           </div>
         )}
+
+         {/* Current Measurements */}
+        <div className="mb-6 bg-white/80 shadow-md rounded-xl p-4 border border-gray-200">
+          <h4 className="text-lg font-medium text-gray-800 mt-3 text-center">Current Measurements</h4>
+          <p className="text-sm font-medium text-gray-800 mb-5 text-center">
+            Update patient's weight and height for this week
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Weight (kg) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={weeklyPlan?.weight_kg || ""}
+                onChange={(e) =>
+                  setWeeklyPlan({ ...weeklyPlan, weight_kg: Number(e.target.value) })
+                }
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("Weight"))
+                    ? "border-red-300 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-green-500"}
+                `}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Height (cm) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="30"
+                value={weeklyPlan?.height_cm || ""}
+                onChange={(e) =>
+                  setWeeklyPlan({ ...weeklyPlan, height_cm: Number(e.target.value) })
+                }
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${validationErrors.some((error) => error.includes("Height"))
+                    ? "border-red-300 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-green-500"}
+                `}
+                required
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Macronutrients */}
         <div className="mb-6 bg-white/80 shadow-md rounded-xl p-4 border border-gray-200">

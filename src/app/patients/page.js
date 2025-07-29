@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Plus, Search, Filter, ArrowUpDown } from "lucide-react"
+import { Users, Search, ArrowUpDown, Calendar, TrendingUp } from "lucide-react"
 import Sidebar from "../../components/layout/Sidebar"
 import AddPatientForm from "../../components/patients/AddPatientForm"
 import { useRouter } from "next/navigation"
@@ -15,7 +15,7 @@ export default function PatientsPage() {
   const [sortDirection, setSortDirection] = useState("asc")
   const [selectedGender, setSelectedGender] = useState("all")
   const [selectedObjective, setSelectedObjective] = useState("all")
-  const router = useRouter();
+  const router = useRouter()
 
   useEffect(() => {
     loadPatients()
@@ -99,23 +99,17 @@ export default function PatientsPage() {
           <header className="pt-7 pb-2 px-7">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-700">
-                  Patients
-                </h1>
-                <p className="text-base sm:text-lg md:text-xl text-gray-700">
-                  Manage your patients
-                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-700">Patients</h1>
+                <p className="text-base sm:text-lg md:text-xl text-gray-700">Manage your patients</p>
               </div>
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => setShowAddPatient(true)}
                   className=" bg-gradient-to-br from-green-400 to-teal-500 text-white font-bold px-4 py-2 rounded-md hover:bg-green-700/88 transition-colors text-sm sm:text-base"
                 >
-                  {/* <Plus className="h-4 w-4 mr-2" /> */}
                   Add New Patient
                 </button>
               </div>
-
             </div>
           </header>
 
@@ -222,15 +216,14 @@ export default function PatientsPage() {
                           <ArrowUpDown className="h-4 w-4 ml-1" />
                         </div>
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white rounded divide-y divide-gray-200">
                     {filteredPatients.map((patient) => (
-                      <tr
-                        key={patient._id}
-                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/patients/${patient._id}`)}
-                      >
+                      <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <div className="h-10 w-10 flex-shrink-0">
@@ -255,7 +248,7 @@ export default function PatientsPage() {
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">{patient.age} years</div>
                           <div className="text-sm text-gray-500">
-                            BMI: {((patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1))}
+                            BMI: {(patient.weight_kg / (patient.height_cm / 100) ** 2).toFixed(1)}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -269,6 +262,24 @@ export default function PatientsPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           {new Date(patient.registration_date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => router.push(`/patients/${patient._id}`)}
+                              className="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-md hover:bg-blue-200 transition-colors"
+                            >
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Weekly Plan
+                            </button>
+                            <button
+                              onClick={() => router.push(`/patients/follow-up/${patient._id}`)}
+                              className="inline-flex items-center px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-md hover:bg-green-200 transition-colors"
+                            >
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Follow Up
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

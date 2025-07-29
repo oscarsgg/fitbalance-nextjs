@@ -78,6 +78,14 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+     // Validate weight and height
+    if (planData.weight_kg === undefined || Number(planData.weight_kg) < 1) {
+      return NextResponse.json({ error: "Weight must be at least 1 kg" }, { status: 400 })
+    }
+    if (planData.height_cm === undefined || Number(planData.height_cm) < 30) {
+      return NextResponse.json({ error: "Height must be at least 30 cm" }, { status: 400 })
+    }
+
     console.log("Creating weekly plan for patient:", patientId)
     console.log("Plan data:", JSON.stringify(planData, null, 2))
 
@@ -127,6 +135,14 @@ export async function PUT(request, { params }) {
     }
 
     console.log("Updating weekly plan:", planId, "for patient:", patientId)
+
+    // Validate weight and height
+    if (planData.weight_kg !== undefined && Number(planData.weight_kg) < 1) {
+      return NextResponse.json({ error: "Weight must be at least 1 kg" }, { status: 400 })
+    }
+    if (planData.height_cm !== undefined && Number(planData.height_cm) < 30) {
+      return NextResponse.json({ error: "Height must be at least 30 cm" }, { status: 400 })
+    }
 
     const success = await WeeklyPlan.update(planId, {
       ...planData,

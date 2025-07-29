@@ -2,39 +2,51 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { User, ArrowLeft } from "lucide-react"
+import { ArrowLeft, TrendingUp, Calendar, Activity } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import Sidebar from "@/components/layout/Sidebar"
-import DietManagement from "@/components/patients/DietManagement"
+import WeightChart from "@/components/patients/WeightChart"
+import HeightChart from "@/components/patients/HeightChart"
 import { useRouter } from "next/navigation"
 
-export default function PatientDetailsPage() {
+export default function PatientFollowUpPage() {
   const { id } = useParams()
   const [patient, setPatient] = useState(null)
+  const [followUpData, setFollowUpData] = useState(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter();
 
   const handleRedirect = () => {
-    router.push(`/patients/follow-up/${id}`);
+    router.push(`/patients/${id}`);
   };
 
   useEffect(() => {
-    const loadPatient = async () => {
+    const loadPatientData = async () => {
       try {
-        const response = await fetch(`/api/patients/${id}`)
-        if (response.ok) {
-          const data = await response.json()
-          setPatient(data.patient)
+        // Cargar datos del paciente
+        const patientResponse = await fetch(`/api/patients/${id}`)
+        if (patientResponse.ok) {
+          const patientData = await patientResponse.json()
+          setPatient(patientData.patient)
+        }
+
+        // Cargar datos de seguimiento
+        const followUpResponse = await fetch(`/api/patients/${id}/follow-up`)
+        if (followUpResponse.ok) {
+          const followUpData = await followUpResponse.json()
+          setFollowUpData(followUpData.data)
         }
       } catch (error) {
-        console.error("Error loading patient:", error)
+        console.error("Error loading patient data:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    loadPatient()
+    if (id) {
+      loadPatientData()
+    }
   }, [id])
 
   if (loading) {
@@ -78,10 +90,10 @@ export default function PatientDetailsPage() {
                   <ArrowLeft className="h-5 w-5 text-gray-500" />
                 </Link>
                 <div className="flex items-center">
-                  <User className="h-8 w-8 text-green-600 mr-3" />
+                  <TrendingUp className="h-8 w-8 text-green-600 mr-3" />
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
-                    <p className="text-gray-600">Patient Details</p>
+                    <h1 className="text-2xl font-bold text-gray-800">{patient.name} - Follow Up</h1>
+                    <p className="text-gray-600">Patient Progress Tracking</p>
                   </div>
                 </div>
               </div>
@@ -90,11 +102,10 @@ export default function PatientDetailsPage() {
 
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Patient Info Card */}
+                {/* Patient Info Card - Same as in patient details */}
                 <div className="lg:col-span-1">
-                  {/* Professional Patient Profile Card */}
                   <div className="bg-white/63 rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     {/* Header with gradient */}
                     <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-white">
@@ -102,9 +113,7 @@ export default function PatientDetailsPage() {
                         <div className="relative">
                           <Image
                             className="h-20 w-20 rounded-full border-4 border-white shadow-lg object-cover"
-                            //default  user img from /public/user-alt.png, patient.image not implemented
                             src="/user-alt.png"
-                            // src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
                             alt={patient.name}
                             width={80}
                             height={80}
@@ -115,7 +124,6 @@ export default function PatientDetailsPage() {
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold">{patient.name}</h2>
-                          {/* <p className="text-green-100 text-sm">ID: #{patient._id?.slice(-6) || "N/A"}</p> */}
                           <p className="text-green-100 text-sm mt-1">{patient.email}</p>
                         </div>
                       </div>
@@ -132,19 +140,7 @@ export default function PatientDetailsPage() {
                               <p className="text-xs text-gray-400">years old</p>
                             </div>
                             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                              <svg
-                                className="h-6 w-6 text-blue-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                              </svg>
+                              <Calendar className="h-6 w-6 text-blue-600" />
                             </div>
                           </div>
                         </div>
@@ -159,93 +155,42 @@ export default function PatientDetailsPage() {
                               <p className="text-xs text-gray-400">kg/m²</p>
                             </div>
                             <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                              <svg
-                                className="h-6 w-6 text-green-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                                />
-                              </svg>
+                              <Activity className="h-6 w-6 text-green-600" />
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Detailed Info */}
+                      {/* Follow-up Stats */}
                       <div className="space-y-4">
                         <div className="border-l-4 border-green-500 pl-4">
-                          <h3 className="font-semibold text-gray-900 mb-3">Personal information</h3>
+                          <h3 className="font-semibold text-gray-900 mb-3">Follow-up Summary</h3>
                           <div className="grid grid-cols-1 gap-3">
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Gender:</span>
-                              <span className="font-medium capitalize">{patient.gender}</span>
+                              <span className="text-gray-600">Weight Records:</span>
+                              <span className="font-medium">{followUpData?.totalWeightRecords || 0}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Phone:</span>
-                              <span className="font-medium">{patient.phone || "not provided"}</span>
+                              <span className="text-gray-600">Recent Meal Logs:</span>
+                              <span className="font-medium">{followUpData?.totalMealLogs || 0}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Height:</span>
-                              <span className="font-medium">{patient.height_cm} cm</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-gray-600">Weight:</span>
+                              <span className="text-gray-600">Current Weight:</span>
                               <span className="font-medium">{patient.weight_kg} kg</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-gray-600">Current Height:</span>
+                              <span className="font-medium">{patient.height_cm} cm</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="border-l-4 border-blue-500 pl-4">
-                          <h3 className="font-semibold text-gray-900 mb-3">Patients objective</h3>
+                          <h3 className="font-semibold text-gray-900 mb-3">Patient Objective</h3>
                           <div className="bg-blue-50 rounded-lg p-3 shadow-sm">
                             <p className="text-blue-800 font-medium capitalize">{patient.objective}</p>
                           </div>
                         </div>
-
-                        {/* Allergies and Restrictions */}
-                        {(patient.allergies?.length > 0 || patient.dietary_restrictions?.length > 0) && (
-                          <div className="border-l-4 border-red-500 pl-4">
-                            <h3 className="font-semibold text-gray-900 mb-3">Medical restriction</h3>
-
-                            {patient.allergies?.length > 0 && (
-                              <div className="mb-3">
-                                <p className="text-sm text-gray-600 mb-2">Allergy:</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {patient.allergies.map((allergy, index) => (
-                                    <span
-                                      key={index}
-                                      className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium"
-                                    >
-                                      {allergy}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {patient.dietary_restrictions?.length > 0 && (
-                              <div>
-                                <p className="text-sm text-gray-600 mb-2">Dietary Restrictions:</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {patient.dietary_restrictions.map((restriction, index) => (
-                                    <span
-                                      key={index}
-                                      className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium"
-                                    >
-                                      {restriction}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
 
                       {/* Action Buttons */}
@@ -254,17 +199,64 @@ export default function PatientDetailsPage() {
                           <button 
                             onClick={handleRedirect}
                             className="flex-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors py-2 px-4 font-medium">
-                              Follow-up patient
+                              Create a weekly plan
                           </button>
                         </div>
                       </div>
+                      
                     </div>
                   </div>
                 </div>
 
-                {/* Diet Management */}
+                {/* Charts Section */}
                 <div className="lg:col-span-2">
-                  <DietManagement patientId={id} />
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                      {/* Height Chart */}
+                      <HeightChart patientId={id} />
+                      
+                      {/* Weight Chart */}
+                      <WeightChart patientId={id} />
+                    </div>
+
+                    {/* Recent Activity Summary */}
+                    <div className="bg-white/63 rounded-lg shadow-sm border border-gray-200 p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-300 to-purple-500 rounded-lg flex items-center justify-center text-white mr-4">
+                          <Activity className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                          <p className="text-sm text-gray-600">Last 30 days meal logging activity</p>
+                        </div>
+                      </div>
+
+                      {followUpData?.totalMealLogs > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-green-50 rounded-lg p-4 text-center">
+                            <div className="text-2xl font-bold text-green-600">{followUpData.totalMealLogs}</div>
+                            <div className="text-sm text-green-700">Meal Logs</div>
+                          </div>
+                          <div className="bg-blue-50 rounded-lg p-4 text-center">
+                            <div className="text-2xl font-bold text-blue-600">{followUpData.totalWeightRecords}</div>
+                            <div className="text-sm text-blue-700">Weight Records</div>
+                          </div>
+                          <div className="bg-purple-50 rounded-lg p-4 text-center">
+                            <div className="text-2xl font-bold text-purple-600">
+                              {Math.round((followUpData.totalMealLogs / 30) * 10) / 10}
+                            </div>
+                            <div className="text-sm text-purple-700">Avg. Daily Logs</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                          <Activity className="h-12 w-12 mb-4 text-gray-300" />
+                          <h4 className="text-lg font-medium mb-2">No Recent Activity</h4>
+                          <p className="text-sm text-center">No meal logs have been recorded in the last 30 days.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

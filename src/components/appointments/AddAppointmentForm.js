@@ -35,7 +35,17 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
 
   // Filter patients based on search term
   useEffect(() => {
-    if (searchTerm && formData.patient_type === "existing") {
+
+    // Only show the dropdown if no patient is selected or the search term
+    // differs from the selected patients name
+    const isSameAsSelected =
+      selectedPatient && searchTerm === selectedPatient.name
+
+    if (
+      searchTerm &&
+      formData.patient_type === "existing" &&
+      !isSameAsSelected
+    ) {
       const filtered = patients.filter(
         (patient) =>
           patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,7 +58,7 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
       setFilteredPatients([])
       setShowPatientDropdown(false)
     }
-  }, [searchTerm, patients, formData.patient_type])
+  }, [searchTerm, patients, formData.patient_type, selectedPatient])
 
   // Load available slots when date changes
   useEffect(() => {
