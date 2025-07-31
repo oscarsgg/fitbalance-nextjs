@@ -133,10 +133,10 @@ export default function PatientFollowUpPage() {
       meal.foods.forEach((food) => {
         if (food.food_details && food.grams) {
           const ratio = food.grams / 100 // Nutrients are per 100g
-          totalCalories += (food.food_details.nutrients?.calories || 0) * ratio
-          totalProtein += (food.food_details.nutrients?.protein || 0) * ratio
-          totalFat += (food.food_details.nutrients?.fat || 0) * ratio
-          totalCarbs += (food.food_details.nutrients?.carbs || 0) * ratio
+          totalCalories += (food.food_details.nutrients?.energy_kcal || 0) * ratio
+          totalProtein += (food.food_details.nutrients?.protein_g || 0) * ratio
+          totalFat += (food.food_details.nutrients?.fat_g || 0) * ratio
+          totalCarbs += (food.food_details.nutrients?.carbohydrates_g || 0) * ratio
         }
       })
     })
@@ -415,7 +415,7 @@ export default function PatientFollowUpPage() {
                                                   {food.food_details?.nutrients && (
                                                     <div className="text-sm text-gray-500">
                                                       {Math.round(
-                                                        (food.food_details.nutrients.calories || 0) *
+                                                        (food.food_details.nutrients.energy_kcal || 0) *
                                                           (food.grams / 100),
                                                       )}{" "}
                                                       cal

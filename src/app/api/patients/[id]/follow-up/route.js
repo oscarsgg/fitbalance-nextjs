@@ -1,29 +1,30 @@
 import { NextResponse } from "next/server"
 import { DailyMealLogs } from "@/models/DailyMealLogs"
 
-export async function GET(request, { params }) {
-  try {
-    const { id } = params
+export async function GET(request, context) {
+  const params = await context.params
+  const id = params.id
 
+  try {
     if (!id) {
       return NextResponse.json({ error: "Patient ID is required" }, { status: 400 })
     }
 
-    // Obtener todos los planes semanales del paciente para el historial de peso/altura
     const client = await import("@/lib/mongodb").then((m) => m.default)
     const db = (await client).db("fitbalance")
 
-    // Obtener historial de peso y altura de WeeklyPlan
     const weightHistory = await db
       .collection("WeeklyPlan")
       .find({
         patient_id: new (await import("mongodb")).ObjectId(id),
-        $or: [{ weight_kg: { $exists: true, $ne: null } }, { height_cm: { $exists: true, $ne: null } }],
+        $or: [
+          { weight_kg: { $exists: true, $ne: null } },
+          { height_cm: { $exists: true, $ne: null } },
+        ],
       })
       .sort({ week_start: 1 })
       .toArray()
 
-    // Procesar datos para las gráficas
     const processedWeightHistory = weightHistory.map((plan) => ({
       date: plan.week_start,
       weight: plan.weight_kg || null,
@@ -31,14 +32,13 @@ export async function GET(request, { params }) {
       week_start: plan.week_start,
     }))
 
-    // Obtener logs de comidas recientes (últimos 30 días)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
     const recentMealLogs = await DailyMealLogs.findByPatientAndDateRange(
       id,
       thirtyDaysAgo.toISOString(),
-      new Date().toISOString(),
+      new Date().toISOString()
     )
 
     return NextResponse.json({
