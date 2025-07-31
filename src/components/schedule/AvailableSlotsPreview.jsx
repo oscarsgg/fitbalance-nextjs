@@ -68,7 +68,11 @@ export default function AvailableSlotsPreview({ selectedDate }) {
       ) : availableSlots.length === 0 ? (
         <div className="text-center py-8">
           <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-500">No available slots for this date</p>
+          <p className="text-gray-500">
+            {selectedDate === new Date().toISOString().split("T")[0]
+              ? "No available slots for today. Check your schedule."
+              : "No available slots for this date. Check your schedule."}
+          </p>
           <p className="text-xs text-gray-400 mt-1">This might be a non-working day or all slots are booked</p>
         </div>
       ) : (

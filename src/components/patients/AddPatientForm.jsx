@@ -5,7 +5,9 @@ import { X, User, Mail, Target, AlertCircle, Check } from "lucide-react"
 
 export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    nombre: "",
+    name: "",
+    lastName: "",
+    secondLastName: "",
     edad: "",
     sexo: "",
     altura_cm: "",
@@ -47,8 +49,11 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
 
   const validateForm = () => {
     // Check required fields
-    if (!formData.nombre.trim()) {
-      return "Full Name is required"
+    if (!formData.name.trim()) {
+      return "First Name is required"
+    }
+    if (!formData.lastName.trim()) {
+      return "Last Name is required"
     }
     if (!formData.edad) {
       return "Age is required"
@@ -158,7 +163,9 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
 
   const handleSuccessClose = () => {
     setFormData({
-      nombre: "",
+      name: "",
+      lastName: "",
+      secondLastName: "",
       edad: "",
       sexo: "",
       altura_cm: "",
@@ -223,7 +230,9 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xl font-bold text-gray-900 mb-2">Patient Created Successfully!</h3>
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <p className="text-sm text-gray-600 mb-2">Patient Details:</p>
-            <p className="font-semibold text-gray-900">{success.name}</p>
+            <p className="font-semibold text-gray-900">
+              {`${success.name} ${success.lastName} ${success.secondLastName || ""}`.trim()}
+            </p>
             <p className="text-sm text-gray-600">
               Username: <span className="font-mono font-semibold">{success.username}</span>
             </p>
@@ -282,18 +291,49 @@ export default function AddPatientForm({ isOpen, onClose, onSuccess }) {
               </div>
 
               <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name *
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name *
                 </label>
                 <input
-                  id="nombre"
-                  name="nombre"
+                  id="name"
+                  name="name"
                   type="text"
                   required
-                  value={formData.nombre}
+                  value={formData.name}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="María González"
+                  placeholder="María"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="González"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="secondLastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Second Last Name
+                </label>
+                <input
+                  id="secondLastName"
+                  name="secondLastName"
+                  type="text"
+                  value={formData.secondLastName}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Smith"
                 />
               </div>
 

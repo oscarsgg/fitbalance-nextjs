@@ -75,11 +75,14 @@ export default function HorizontalCard() {
             {error}
           </Typography>
         ) : recentPatients.length > 0 ? (
-          recentPatients.map((patient, index) => (
-            <Typography key={index} color="gray" className="font-normal text-sm md:text-base">
-              {patient.name} ({formatDate(patient.registration_date)})
-            </Typography>
-          ))
+          recentPatients.map((patient, index) => {
+            const fullName = `${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`.trim()
+            return (
+              <Typography key={index} color="gray" className="font-normal text-sm md:text-base">
+                {fullName} ({formatDate(patient.registration_date)})
+              </Typography>
+            )
+          })
         ) : (
           <Typography color="gray" className="font-normal text-sm md:text-base">
             No recent info to show. Try registering a new patient!

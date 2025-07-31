@@ -1,18 +1,20 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Calendar, Clock, Filter, Search, ChevronLeft, ChevronRight, Users } from "lucide-react"
+import { Calendar, Clock, Filter, Search, ChevronLeft, ChevronRight, Users, AlertCircle } from "lucide-react"
 import Sidebar from "../../components/layout/Sidebar"
 import AddAppointmentForm from "../../components/appointments/AddAppointmentForm"
 import AppointmentCard from "../../components/appointments/AppointmentCard"
 import CalendarView from "../../components/appointments/CalendarView"
 import AddPatientForm from "../../components/patients/AddPatientForm"
+import { useRouter } from "next/navigation"
 
 export default function AppointmentsPage() {
   const [view, setView] = useState("list") // "list" or "calendar"
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAddAppointment, setShowAddAppointment] = useState(false)
+  const [showScheduleWarning, setShowScheduleWarning] = useState(false)
   const [showAddPatient, setShowAddPatient] = useState(false)
   const [patientPrefilledData, setPatientPrefilledData] = useState(null)
   const [selectedDate, setSelectedDate] = useState(
@@ -22,6 +24,7 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const todayLocal = new Date().toLocaleDateString("en-CA") // formato YYYY-MM-DD local
+  const router = useRouter()
 
   const loadAppointments = useCallback(async () => {
     try {
@@ -148,6 +151,22 @@ export default function AppointmentsPage() {
     setSelectedDate(localDate)
   }
 
+  const handleAddAppointmentClick = async () => {
+    try {
+      const response = await fetch("/api/schedule", { credentials: "include" })
+      const data = await response.json()
+      const hasSchedule = data?.schedule?.working_days?.length > 0
+      if (hasSchedule) {
+        setShowAddAppointment(true)
+      } else {
+        setShowScheduleWarning(true)
+      }
+    } catch (error) {
+      console.error("Error loading schedule:", error)
+      setShowScheduleWarning(true)
+    }
+  }
+
   function parseLocalDate(dateString) {
     const [year, month, day] = dateString.split("-").map(Number)
     return new Date(year, month - 1, day) // new Date(año, mes (0-11), día)
@@ -202,7 +221,7 @@ export default function AppointmentsPage() {
                 </div>
 
                 <button
-                  onClick={() => setShowAddAppointment(true)}
+                  onClick={handleAddAppointmentClick}
                   className="bg-gradient-to-br from-green-400 to-teal-500 text-white font-bold px-4 py-2 rounded-md hover:bg-green-700/88 transition-colors text-sm sm:text-base flex items-center"
                 >
                   New Appointment
@@ -344,7 +363,7 @@ export default function AppointmentsPage() {
                         : "No appointments scheduled for this date."}
                     </p>
                     <button
-                      onClick={() => setShowAddAppointment(true)}
+                      onClick={handleAddAppointmentClick}
                       className="bg-green-600/80 text-white px-4 py-2 rounded-md hover:bg-green-800/90 transition-colors"
                     >
                       Schedule New Appointment
@@ -374,15 +393,45 @@ export default function AppointmentsPage() {
                   // Handle appointment click in calendar view
                   console.log("Appointment clicked:", appointment)
                 }}
-              />
-            )}
-          </main>
+               />
+              )}
+            </main>
 
-          {/* Add Appointment Modal */}
-          <AddAppointmentForm
-            isOpen={showAddAppointment}
-            onClose={() => setShowAddAppointment(false)}
-            onSuccess={handleAppointmentSuccess}
+            {showScheduleWarning && (
+              <div
+                className="fixed inset-0 flex items-center justify-center p-4 z-50"
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+              >
+                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Schedule Required</h3>
+                  <p className="text-sm text-gray-600 mb-4">Please configure your working schedule before adding appointments.</p>
+
+                  
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => router.push('/schedule')}
+                      className="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
+                    >
+                      Go to Schedule
+                    </button>
+                    <button
+                      onClick={() => setShowScheduleWarning(false)}
+                      className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Add Appointment Modal */}
+            <AddAppointmentForm
+              isOpen={showAddAppointment}
+              onClose={() => setShowAddAppointment(false)}
           />
 
           {/* Add Patient Modal */}

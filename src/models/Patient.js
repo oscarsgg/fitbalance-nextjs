@@ -9,6 +9,8 @@ export class Patient {
     this.username = data.username
     this.password = data.password
     this.name = data.name
+    this.lastName = data.lastName
+    this.secondLastName = data.secondLastName || null
     this.age = Number.isInteger(data.age) ? data.age : parseInt(data.age)
     this.gender = data.gender
     this.height_cm = Number.isInteger(data.height_cm) ? data.height_cm : parseInt(data.height_cm)
@@ -28,13 +30,13 @@ export class Patient {
   }
 
   // Generate unique username
-  static async generateUniqueUsername(name) {
+  static async generateUniqueUsername(name, lastName) {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
 
       // Clean and format name
-      const cleanName = name
+       const cleanName = `${name} ${lastName || ""}`
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "") // Remove accents
@@ -95,7 +97,10 @@ export class Patient {
       }
 
       // Generar username, hash password, etc.
-      const username = await Patient.generateUniqueUsername(patientData.name)
+      const username = await Patient.generateUniqueUsername(
+        patientData.name,
+        patientData.lastName,
+      )
       const defaultPassword = "123456"
       const hashedPassword = await bcrypt.hash(defaultPassword, 12)
 

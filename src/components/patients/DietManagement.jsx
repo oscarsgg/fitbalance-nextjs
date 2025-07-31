@@ -13,6 +13,7 @@ export default function DietManagement({ patientId }) {
   const [searchResults, setSearchResults] = useState([])
   const [selectedGrams, setSelectedGrams] = useState(100)
   const [loading, setLoading] = useState(false)
+  const [selectedFood, setSelectedFood] = useState(null)
   const [patient, setPatient] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
@@ -72,6 +73,7 @@ export default function DietManagement({ patientId }) {
     setSearchTerm("")
     setSearchResults([])
     setSelectedGrams(100)
+    setSelectedFood(null)
     setValidationErrors([])
   }
 
@@ -287,21 +289,21 @@ export default function DietManagement({ patientId }) {
     }
   }
 
-  const addFoodToMeal = async (food) => {
-    if (!weeklyPlan || selectedGrams <= 0) return
+  const addFoodToMeal = async () => {
+    if (!weeklyPlan || selectedGrams <= 0 || !selectedFood) return
 
     console.log("Adding food to meal:", {
-      food: food.name,
+      food: selectedFood.name,
       day: selectedDay,
       mealType: selectedMealType,
       grams: selectedGrams,
     })
 
     const newMeal = {
-      food_id: food._id,
+      food_id: selectedFood._id,
       grams: Number.parseInt(selectedGrams),
-      food_name: food.name,
-      food_nutrients: food.nutrients,
+      food_name: selectedFood.name,
+      food_nutrients: selectedFood.nutrients,
     }
 
     // Create a deep copy of the weekly plan to avoid mutation issues
@@ -328,9 +330,7 @@ export default function DietManagement({ patientId }) {
     setWeeklyPlan(updatedPlan)
 
     // Clear search
-    setSearchTerm("")
-    setSearchResults([])
-    setSelectedGrams(100)
+    clearFormData()
 
     console.log(
       "Updated plan for",
@@ -895,6 +895,15 @@ export default function DietManagement({ patientId }) {
                     />
                   </div>
                 </div>
+                <div className="mt-2 text-right">
+                    <button
+                      onClick={addFoodToMeal}
+                      disabled={!selectedFood || !selectedGrams || selectedGrams <= 0}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add
+                    </button>
+                  </div>
 
                 {/* Search Results */}
                 {searchResults.length > 0 && (
@@ -905,7 +914,10 @@ export default function DietManagement({ patientId }) {
                     {searchResults.map((food) => (
                       <div
                         key={food._id}
-                        className="p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex justify-between items-center"
+                        onClick={() => setSelectedFood(food)}
+                          className={`p-3 border-b border-gray-100 last:border-b-0 flex justify-between items-center cursor-pointer ${
+                          selectedFood?._id === food._id ? "bg-green-100" : "hover:bg-gray-50"
+                        }`}
                       >
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{food.name}</p>

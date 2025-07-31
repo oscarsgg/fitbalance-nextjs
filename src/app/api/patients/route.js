@@ -18,7 +18,9 @@ export async function POST(request) {
     // Get patient data from form (still in Spanish field names for compatibility)
     const body = await request.json()
     const {
-      nombre,
+      name,
+      lastName,
+      secondLastName,
       edad,
       sexo,
       altura_cm,
@@ -32,9 +34,9 @@ export async function POST(request) {
     } = body
 
     // Validation
-    if (!nombre || !edad || !sexo || !altura_cm || !peso_kg || !email || !objetivo) {
+    if (!name || !lastName || !edad || !sexo || !altura_cm || !peso_kg || !email || !objetivo) {
       return NextResponse.json(
-        { error: "Name, age, gender, height, weight, email, and objective are required" },
+        { error: "Name, last name, age, gender, height, weight, email, and objective are required" },
         { status: 400 },
       )
     }
@@ -62,7 +64,9 @@ export async function POST(request) {
 
     // Map Spanish form fields to English database fields
     const patientData = {
-      name: nombre,
+      name,
+      lastName,
+      secondLastName: secondLastName || null,
       age: Number.parseInt(edad),
       gender: sexo,
       height_cm: Number.parseFloat(altura_cm),

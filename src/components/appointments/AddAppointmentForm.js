@@ -542,7 +542,11 @@ export default function AddAppointmentForm({ isOpen, onClose, onSuccess }) {
                   ))}
                 </select>
                 {formData.appointment_date && availableSlots.length === 0 && (
-                  <p className="text-xs text-red-500 mt-1">No available slots for this date</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    {formData.appointment_date === new Date().toISOString().split("T")[0]
+                      ? "No available slots for today. Check your schedule."
+                      : "No available slots for this date. Check your schedule."}
+                  </p>
                 )}
               </div>
 

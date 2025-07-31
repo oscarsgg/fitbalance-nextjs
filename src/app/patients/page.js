@@ -43,8 +43,9 @@ export default function PatientsPage() {
 
   const filteredPatients = patients
     .filter((patient) => {
+      const fullName = `${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`.toLowerCase()
       const matchesSearch =
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fullName.includes(searchTerm.toLowerCase()) ||
         patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.phone?.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -229,7 +230,7 @@ export default function PatientsPage() {
                             <div className="h-10 w-10 flex-shrink-0">
                               <div className="h-full w-full rounded-full bg-green-100 flex items-center justify-center">
                                 <span className="text-green-600 font-medium">
-                                  {patient.name
+                                  {`${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`
                                     .split(" ")
                                     .map((n) => n[0])
                                     .join("")
@@ -238,7 +239,9 @@ export default function PatientsPage() {
                               </div>
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{patient.name}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {`${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`.trim()}
+                              </div>
                               <div className="text-sm text-gray-500">
                                 {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                               </div>

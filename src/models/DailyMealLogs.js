@@ -2,7 +2,7 @@ import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { Food } from "./Food"
 
-const DEBUG = process.env.DEBUG_LOGS === "false"
+const DEBUG = process.env.DEBUG_LOGS === "true"
 
 export class DailyMealLogs {
   static async create(logData) {
@@ -57,9 +57,20 @@ export class DailyMealLogs {
         console.log("Searching for log with patient_id:", patientId, "date:", date)
       }
 
+      // Parse the date and create start/end of day
+      const selectedDate = new Date(date)
+      const startOfDay = new Date(selectedDate)
+      startOfDay.setHours(0, 0, 0, 0)
+
+      const endOfDay = new Date(selectedDate)
+      endOfDay.setHours(23, 59, 59, 999)
+
       const log = await db.collection("DailyMealLogs").findOne({
         patient_id: new ObjectId(patientId),
-        date: new Date(date),
+        date: {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        },
       })
 
       if (!log) {
@@ -88,10 +99,15 @@ export class DailyMealLogs {
     }
   }
 
+  // ✅ AGREGAMOS EL MÉTODO QUE FALTABA
   static async findByPatientAndDateRange(patientId, startDate, endDate) {
     try {
       const client = await clientPromise
       const db = client.db("fitbalance")
+
+      if (DEBUG) {
+        console.log("Searching for logs with patient_id:", patientId, "from:", startDate, "to:", endDate)
+      }
 
       const logs = await db
         .collection("DailyMealLogs")
@@ -104,6 +120,10 @@ export class DailyMealLogs {
         })
         .sort({ date: 1 })
         .toArray()
+
+      if (DEBUG) {
+        console.log("Found", logs.length, "logs in date range")
+      }
 
       return logs.map((log) => ({
         ...log,

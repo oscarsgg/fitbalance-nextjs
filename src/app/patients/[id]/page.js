@@ -80,7 +80,9 @@ export default function PatientDetailsPage() {
                 <div className="flex items-center">
                   <User className="h-8 w-8 text-green-600 mr-3" />
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                      {`${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`.trim()}
+                    </h1>
                     <p className="text-gray-600">Patient Details</p>
                   </div>
                 </div>
@@ -105,7 +107,7 @@ export default function PatientDetailsPage() {
                             //default  user img from /public/user-alt.png, patient.image not implemented
                             src="/user-alt.png"
                             // src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
-                            alt={patient.name}
+                            alt={`${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`}
                             width={80}
                             height={80}
                           />
@@ -114,7 +116,9 @@ export default function PatientDetailsPage() {
                           </div>
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold">{patient.name}</h2>
+                          <h2 className="text-2xl font-bold">
+                            {`${patient.name} ${patient.lastName || ""} ${patient.secondLastName || ""}`.trim()}
+                          </h2>
                           {/* <p className="text-green-100 text-sm">ID: #{patient._id?.slice(-6) || "N/A"}</p> */}
                           <p className="text-green-100 text-sm mt-1">{patient.email}</p>
                         </div>
