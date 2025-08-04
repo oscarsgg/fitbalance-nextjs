@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState({})
   const [saving, setSaving] = useState(false)
-  const [profileImage, setProfileImage] = useState("/user.png")
+  const [profileImage, setProfileImage] = useState("/nutriologo_cartoon.jpg")
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -340,13 +340,6 @@ export default function ProfilePage() {
                 </p>
               </div>
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => router.back()}
-                  className="bg-gray-500 text-white font-bold px-4 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm sm:text-base flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Go Back
-                </button>
                 {!editing ? (
                   <button
                     onClick={() => setEditing(true)}
@@ -394,7 +387,7 @@ export default function ProfilePage() {
                           width={96}
                           height={96}
                           unoptimized={true}
-                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                          className="w-30 h-30 rounded-full object-cover border-4 border-white shadow-lg"
                         />
                         {editing && (
                           <button

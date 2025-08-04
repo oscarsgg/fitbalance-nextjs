@@ -31,7 +31,16 @@ export async function GET(request) {
         specialization: nutritionist.specialization,
         licenseNumber: nutritionist.licenseNumber,
         phone: nutritionist.phone,
-        address: nutritionist.address,
+        city: nutritionist.city,
+        street: nutritionist.street,
+        streetNumber: nutritionist.streetNumber,
+        neighborhood: nutritionist.neighborhood,
+        address: {
+          city: nutritionist.city,
+          street: nutritionist.street,
+          streetNumber: nutritionist.streetNumber,
+          neighborhood: nutritionist.neighborhood,
+        },
         createdAt: nutritionist.createdAt,
         lastLogin: nutritionist.lastLogin,
       },
@@ -56,7 +65,21 @@ export async function PUT(request) {
 
     // Get update data
     const body = await request.json()
-    const { name, lastName, secondLastName, specialization, licenseNumber, phone, address, currentPassword, newPassword, confirmPassword } = body
+    const {
+      name,
+      lastName,
+      secondLastName,
+      specialization,
+      licenseNumber,
+      phone,
+      city,
+      street,
+      streetNumber,
+      neighborhood,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    } = body
 
     // Fetch the nutritionist from DB to get the stored password hash for verification
     const nutritionistInDb = await Nutritionist.findByEmail(decoded.email)
@@ -100,7 +123,18 @@ export async function PUT(request) {
     }
 
     // Prepare data for profile update (excluding password fields as they are handled above)
-    const safeUpdateData = { name, lastName, secondLastName, specialization, licenseNumber, phone, address }
+    const safeUpdateData = {
+      name,
+      lastName,
+      secondLastName,
+      specialization,
+      licenseNumber,
+      phone,
+      city,
+      street,
+      streetNumber,
+      neighborhood,
+    }
 
     // Only update profile fields if they are actually provided and different from current DB values
     const fieldsToUpdate = {}
