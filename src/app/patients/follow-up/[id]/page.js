@@ -111,9 +111,9 @@ export default function PatientFollowUpPage() {
 
   const getMealTypeLabel = (type) => {
     const labels = {
-      breakfast: "Desayuno",
-      lunch: "Almuerzo",
-      dinner: "Cena",
+      breakfast: "Breakfast",
+      lunch: "Lunch",
+      dinner: "Dinner",
       snack: "Snack",
     }
     return labels[type] || type
@@ -338,7 +338,10 @@ export default function PatientFollowUpPage() {
                             mode="single"
                             selected={selectedDate}
                             onSelect={setSelectedDate}
-                            className="shadow-sm"
+                            className="shadow-md
+                            border border-gray-200 rounded-lg
+                            bg-white/60
+                            "
                           />
                         </div>
 

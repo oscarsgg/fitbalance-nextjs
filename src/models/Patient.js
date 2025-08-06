@@ -10,7 +10,7 @@ export class Patient {
     this.password = data.password
     this.name = data.name
     this.lastName = data.lastName
-    this.secondLastName = data.secondLastName || null
+    if (data.secondLastName) this.secondLastName = data.secondLastName
     this.age = Number.isInteger(data.age) ? data.age : parseInt(data.age)
     this.gender = data.gender
     this.height_cm = Number.isInteger(data.height_cm) ? data.height_cm : parseInt(data.height_cm)
@@ -24,7 +24,8 @@ export class Patient {
       ? new Date(data.registration_date)
       : new Date() // ✅ fecha como Date real
     this.notes = data.notes || ""
-    this.last_consultation = data.last_consultation || null
+    if (data.last_consultation)
+      this.last_consultation = new Date(data.last_consultation)
     this.nutritionist_id = data.nutritionist_id
     this.isActive = data.isActive !== undefined ? data.isActive : true
   }
@@ -109,6 +110,10 @@ export class Patient {
         username,
         password: hashedPassword,
       })
+
+       Object.keys(patient).forEach(
+        (k) => patient[k] === null && delete patient[k],
+      )
 
       const result = await db.collection("Patients").insertOne(patient)
 

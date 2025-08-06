@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
 import { ObjectId } from "mongodb"
 import { Patient } from "@/models/Patient"
+import { sendPatientCredentials } from "@/lib/email"
 
 export async function POST(request) {
   try {
@@ -83,14 +84,26 @@ export async function POST(request) {
 
     // Create patient
     const patient = await Patient.create(patientData)
+    const { defaultPassword, ...patientWithoutPassword } = patient
 
-    return NextResponse.json(
-      {
-        message: "Patient created successfully",
-        patient,
-      },
-      { status: 201 },
-    )
+    let warning
+    try {
+      await sendPatientCredentials(patient.email, patient.username, defaultPassword)
+    } catch (emailError) {
+      console.error("Send credentials error:", emailError)
+      warning = "Patient created but email could not be sent"
+    }
+
+    const responseBody = {
+      message: "Patient created successfully",
+      patient,
+    }
+
+    if (warning) {
+      responseBody.warning = warning
+    }
+
+    return NextResponse.json(responseBody, { status: 201 })
   } catch (error) {
     console.error("Create patient error:", error)
 
