@@ -46,7 +46,8 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     // Get token from cookies
-    const token = request.cookies.get("token")?.value
+    const cookieStore = cookies()
+    const token = cookieStore.get("token")?.value
 
     if (!token) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 })

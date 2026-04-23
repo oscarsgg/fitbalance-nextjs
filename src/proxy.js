@@ -1,47 +1,45 @@
-import { NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
+import { NextResponse } from 'next/server';
 
-export function proxy(request) {
-  // Get token from cookies
-  const token = request.cookies.get("token")?.value
+const SUPPORTED_LANGS = ['es', 'en'];
+const DEFAULT_LANG = 'es';
 
-  // Define protected routes
-  const protectedRoutes = ["/dashboard", "/schedule", "/patients", "/appointments", "/profile"]
-  const authRoutes = ["/login", "/register"]
-  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+/**
+ * Proxy handler for i18n routing (Next.js 16+)
+ * - Redirects / to /es (default language)
+ * - Redirects invalid language routes to /es (e.g., /fr, /de)
+ * - Preserves pathname when switching languages
+ */
+export default function proxy(request) {
+  const pathname = request.nextUrl.pathname;
 
-  const isAuthRoute = authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
-
-  // If accessing protected route without token, redirect to login
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/login", request.url))
+  // Handle root path - redirect to default language
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL(`/${DEFAULT_LANG}`, request.url));
   }
 
-  // If accessing auth routes with valid token, redirect to dashboard
-  if (isAuthRoute && token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
-      // Check if token has nutritionistId (new format)
-      if (decoded.nutritionistId) {
-        return NextResponse.redirect(new URL("/dashboard", request.url))
-      }
-    } catch (error) {
-      // Token is invalid, allow access to auth routes
-      return NextResponse.next()
+  // Extract the first segment to check if it's a language code
+  const segments = pathname.split('/').filter(Boolean);
+  const potentialLang = segments[0];
+
+  // If first segment is not a supported language, check if it should be redirected
+  if (segments.length > 0 && potentialLang && !SUPPORTED_LANGS.includes(potentialLang)) {
+    // Don't redirect API routes or Next.js internal routes
+    if (!pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.includes('.')) {
+      // Redirect non-API routes with invalid language to default language
+      return NextResponse.redirect(new URL(`/${DEFAULT_LANG}${pathname}`, request.url));
     }
   }
 
-  return NextResponse.next()
+  // Let all other routes pass through
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/dashboard", 
-    "/login", 
-    "/register", 
-    "/schedule/:path*", 
-    "/patients/:path*", 
-    "/appointments/:path*", 
-    "/profile"],
-}
-
+    // Match root and all paths except:
+    // - API routes (/api/...)
+    // - Next.js internals (/_next/...)
+    // - Static files (extensions like .png, .jpg, etc.)
+    '/((?!api/|_next/|[^?]*\\.(?:jpg|jpeg|gif|png|webp|svg|css|js)).*)',
+  ],
+};

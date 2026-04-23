@@ -1,0 +1,66 @@
+{
+  "hero": {
+    "title": "Welcome to FitBalance",
+    "subtitle": "Your Personal Nutrition & Wellness Partner",
+    "description": "Transform your health with personalized nutrition guidance, meal planning, and expert support from certified nutritionists.",
+    "cta_primary": "Get Started",
+    "cta_secondary": "Learn More"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Comprehensive nutrition solutions tailored to your needs",
+    "items": [
+      {
+        "id": "nutrition_planning",
+        "title": "Personalized Nutrition Planning",
+        "description": "Custom meal plans designed specifically for your health goals, dietary preferences, and lifestyle."
+      },
+      {
+        "id": "diet_tracking",
+        "title": "Smart Nutrition Tracking",
+        "description": "Track your meals, calories, and macronutrients with our intuitive app and receive real-time feedback."
+      },
+      {
+        "id": "expert_guidance",
+        "title": "Expert Guidance",
+        "description": "Connect with certified nutritionists who provide personalized advice and ongoing support for your wellness journey."
+      },
+      {
+        "id": "health_monitoring",
+        "title": "Health Monitoring",
+        "description": "Monitor key health metrics, track progress, and receive insights to optimize your nutrition strategy."
+      }
+    ]
+  },
+  "footer": {
+    "company": "FitBalance",
+    "tagline": "Your Partner in Wellness",
+    "sections": {
+      "product": {
+        "title": "Product",
+        "links": [
+          { "label": "Features", "href": "#features" },
+          { "label": "Pricing", "href": "#pricing" },
+          { "label": "Security", "href": "#security" }
+        ]
+      },
+      "company": {
+        "title": "Company",
+        "links": [
+          { "label": "About", "href": "#about" },
+          { "label": "Blog", "href": "#blog" },
+          { "label": "Careers", "href": "#careers" }
+        ]
+      },
+      "legal": {
+        "title": "Legal",
+        "links": [
+          { "label": "Privacy", "href": "#privacy" },
+          { "label": "Terms", "href": "#terms" },
+          { "label": "Contact", "href": "#contact" }
+        ]
+      }
+    },
+    "copyright": "© 2024 FitBalance. All rights reserved."
+  }
+}

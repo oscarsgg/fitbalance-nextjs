@@ -72,6 +72,11 @@ export class Appointment {
   // Check for time conflicts
   static async checkTimeConflict(nutritionistId, date, time) {
     try {
+      // Validate time parameter
+      if (!time || typeof time !== 'string') {
+        return { hasConflict: false, conflictTime: null };
+      }
+
       const client = await clientPromise
       const db = client.db("fitbalance")
 
@@ -95,6 +100,10 @@ export class Appointment {
 
       // Check each existing appointment for conflicts
       for (const existing of existingAppointments) {
+        // Validate that appointment_time exists before splitting
+        if (!existing.appointment_time || typeof existing.appointment_time !== 'string') {
+          continue; // Skip appointments without a valid time
+        }
         const [existingHours, existingMinutes] = existing.appointment_time.split(":").map(Number)
         const existingStart = existingHours * 60 + existingMinutes
         const existingEnd = existingStart + 60 // Default 60 minutes
@@ -216,6 +225,24 @@ export class Appointment {
       const result = await db
         .collection("Appointments")
         .updateOne({ _id: new ObjectId(appointmentId) }, { $set: updateData })
+
+      return result.modifiedCount > 0
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Update appointment patient ID
+  static async updatePatientId(appointmentId, patientId) {
+    try {
+      const client = await clientPromise
+      const db = client.db("fitbalance")
+
+      const patientObjectId = typeof patientId === "string" ? new ObjectId(patientId) : patientId
+
+      const result = await db
+        .collection("Appointments")
+        .updateOne({ _id: new ObjectId(appointmentId) }, { $set: { patient_id: patientObjectId, updated_at: new Date() } })
 
       return result.modifiedCount > 0
     } catch (error) {
