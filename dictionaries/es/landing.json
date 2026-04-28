@@ -1,0 +1,43 @@
+{
+  "hero": {
+    "name": "FitBalance",
+    "title": "Bienvenido a FitBalance — tu sistema de gestión nutricional",
+    "description": "FitBalance te ayuda a administrar pacientes, crear planes de alimentación personalizados y organizar tus citas.",
+    "cta": "¡Regístrate ahora!",
+    "rightTitle": "Nutrición simplificada.",
+    "rightDescription": "FitBalance reúne todas las herramientas que un nutriólogo necesita en una sola plataforma."
+  },
+  "services": {
+    "title": "Gestiona pacientes",
+    "highlight": "con facilidad",
+    "description": "Organiza a tus clientes, diseña planes de alimentación y monitorea su progreso desde tu navegador.",
+    "cards": [
+      {
+        "id": 1,
+        "image": "nutriologo.png",
+        "title": "Gestión inteligente de clientes",
+        "subtitle": "Administra pacientes fácilmente, da seguimiento al progreso y asigna dietas personalizadas"
+      },
+      {
+        "id": 2,
+        "image": "nutrition.jpg",
+        "title": "Planes nutricionales personalizados",
+        "subtitle": "Crea, ajusta y entrega planes de alimentación personalizados directamente a tus clientes."
+      },
+      {
+        "id": 3,
+        "image": "apple-guide.png",
+        "title": "Analítica y estadísticas",
+        "subtitle": "Visualiza el progreso de tus pacientes con gráficos detallados."
+      }
+    ]
+  },
+  "footer": {
+    "teamTitle": "Equipo FitBalance",
+    "projectDescription": "Un proyecto académico",
+    "quickLinksTitle": "Enlaces rápidos",
+    "followUsTitle": "Síguenos",
+    "links": ["Inicio", "Nosotros", "Contacto"],
+    "copyright": "Todos los derechos reservados."
+  }
+}
