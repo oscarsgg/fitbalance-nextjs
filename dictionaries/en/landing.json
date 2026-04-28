@@ -1,0 +1,43 @@
+{
+  "hero": {
+    "name": "FitBalance",
+    "title": "Welcome to FitBalance — your nutrition management system",
+    "description": "FitBalance helps you manage patients, create personalized meal plans, and organize your appointments.",
+    "cta": "Register now!",
+    "rightTitle": "Nutrition made simple.",
+    "rightDescription": "FitBalance brings all the tools a nutritionist needs into one powerful platform."
+  },
+  "services": {
+    "title": "Manage patients",
+    "highlight": "with ease",
+    "description": "Organize your clients, design meal plans, and track their progress directly from your browser.",
+    "cards": [
+      {
+        "id": 1,
+        "image": "nutriologo.png",
+        "title": "Smart client management",
+        "subtitle": "Manage your patients, track progress, and assign personalized diets easily."
+      },
+      {
+        "id": 2,
+        "image": "nutrition.jpg",
+        "title": "Personalized nutrition plans",
+        "subtitle": "Create, adjust, and deliver custom meal plans to your clients in just a few clicks."
+      },
+      {
+        "id": 3,
+        "image": "apple-guide.png",
+        "title": "Analytics & insights",
+        "subtitle": "Visualize your patients' progress with detailed charts."
+      }
+    ]
+  },
+  "footer": {
+    "teamTitle": "FitBalance Team",
+    "projectDescription": "An academic project",
+    "quickLinksTitle": "Quick links",
+    "followUsTitle": "Follow us",
+    "links": ["Home", "About", "Contact us"],
+    "copyright": "All rights reserved."
+  }
+}
