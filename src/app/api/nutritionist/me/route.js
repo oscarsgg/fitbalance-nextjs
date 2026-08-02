@@ -14,8 +14,8 @@ export async function GET(request) {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
 
-    // Get nutritionist data
-    const nutritionist = await Nutritionist.findById(decoded.nutritionistId)
+    // Get nutritionist data (using 'id' from JWT, not 'nutritionistId')
+    const nutritionist = await Nutritionist.findById(decoded.id)
 
     if (!nutritionist) {
       return NextResponse.json({ error: "Nutritionist not found" }, { status: 404 })
@@ -81,8 +81,8 @@ export async function PUT(request) {
       confirmPassword,
     } = body
 
-    // Fetch the nutritionist from DB to get the stored password hash for verification
-    const nutritionistInDb = await Nutritionist.findByEmail(decoded.email)
+    // Fetch the nutritionist from DB using ID from JWT
+    const nutritionistInDb = await Nutritionist.findById(decoded.id)
 
     if (!nutritionistInDb) {
       return NextResponse.json({ error: "Nutritionist not found" }, { status: 404 })

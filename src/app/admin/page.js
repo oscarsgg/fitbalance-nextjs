@@ -18,13 +18,13 @@ export default function AdminPage() {
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
-        const response = await fetch("/api/auth/me")
+        const response = await fetch("/api/nutritionist/me")
         if (response.ok) {
           const userData = await response.json()
-          setUser(userData)
+          setUser(userData.nutritionist)
 
           // Verificar si es admin
-          if (userData.role === "admin") {
+          if (userData.nutritionist.role === "admin") {
             setIsAdmin(true)
           } else {
             // Redirigir si no es admin
@@ -46,8 +46,8 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-white text-xl">Cargando...</div>
+      <div className="min-h-screen bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b] flex items-center justify-center">
+        <div className="text-green-800 text-xl font-semibold">Cargando...</div>
       </div>
     )
   }
@@ -57,20 +57,20 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-[#d1ffbe] to-[#85ff9b]">
       {/* Header */}
-      <header className="bg-slate-950 border-b border-slate-700 sticky top-0 z-50">
+      <header className="bg-white/80 border-b border-green-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-slate-400 text-sm">Bienvenido, {user?.name}</p>
+            <h1 className="text-2xl font-bold text-green-800">Admin Dashboard</h1>
+            <p className="text-green-600 text-sm">Bienvenido, {user?.name}</p>
           </div>
           <button
             onClick={async () => {
               await fetch("/api/auth/logout", { method: "POST" })
               router.push("/login")
             }}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition font-medium"
           >
             Logout
           </button>
@@ -81,7 +81,7 @@ export default function AdminPage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Badge de rol */}
         <div className="mb-8">
-          <div className="inline-block px-4 py-2 bg-amber-500 text-amber-950 rounded-lg font-semibold">
+          <div className="inline-block px-4 py-2 bg-green-500 text-white rounded-lg font-semibold shadow-md">
             🔐 Rol: {user?.role?.toUpperCase()}
           </div>
         </div>
@@ -89,21 +89,21 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
-            { label: "Total Nutricionistas", value: stats.totalNutritionists, icon: "👨‍⚕️" },
-            { label: "Total Pacientes", value: stats.totalPatients, icon: "👥" },
-            { label: "Citas Activas", value: stats.activeAppointments, icon: "📅" },
-            { label: "Estado del Sistema", value: stats.systemHealth, icon: "⚙️" },
+            { label: "Total Nutricionistas", value: stats.totalNutritionists, icon: "👨‍⚕️", color: "bg-emerald-100" },
+            { label: "Total Pacientes", value: stats.totalPatients, icon: "👥", color: "bg-green-100" },
+            { label: "Citas Activas", value: stats.activeAppointments, icon: "📅", color: "bg-lime-100" },
+            { label: "Estado del Sistema", value: stats.systemHealth, icon: "⚙️", color: "bg-teal-100" },
           ].map((stat, idx) => (
             <div
               key={idx}
-              className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition"
+              className="bg-white/85 border border-green-200 rounded-lg p-6 hover:shadow-lg hover:border-green-300 transition"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm">{stat.label}</p>
-                  <p className="text-3xl font-bold text-white mt-2">{stat.value}</p>
+                  <p className="text-green-700 text-sm font-medium">{stat.label}</p>
+                  <p className="text-3xl font-bold text-green-900 mt-2">{stat.value}</p>
                 </div>
-                <div className="text-4xl">{stat.icon}</div>
+                <div className={`text-4xl p-3 rounded-lg ${stat.color}`}>{stat.icon}</div>
               </div>
             </div>
           ))}
@@ -111,34 +111,37 @@ export default function AdminPage() {
 
         {/* Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">⚙️ Gestión del Sistema</h2>
+          <div className="bg-white/85 border border-green-200 rounded-lg p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-green-900 mb-4">⚙️ Gestión del Sistema</h2>
             <div className="space-y-3">
-              <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+              <button className="w-full py-2 px-4 bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white rounded-lg transition font-medium">
                 Ver Nutricionistas
               </button>
-              <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+              <button className="w-full py-2 px-4 bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white rounded-lg transition font-medium">
                 Ver Pacientes
               </button>
-              <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+              <button className="w-full py-2 px-4 bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white rounded-lg transition font-medium">
                 Reportes
               </button>
             </div>
           </div>
 
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">📊 Información de Rol</h2>
-            <div className="space-y-2 text-slate-300">
+          <div className="bg-white/85 border border-green-200 rounded-lg p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-green-900 mb-4">📊 Información de Rol</h2>
+            <div className="space-y-2 text-green-800">
               <p>
-                <strong>ID:</strong> {user?.id}
+                <strong>ID:</strong> <span className="text-green-700 text-sm">{user?.id?.toString().slice(0, 12)}...</span>
               </p>
               <p>
-                <strong>Email:</strong> {user?.email}
+                <strong>Email:</strong> <span className="text-green-700">{user?.email}</span>
               </p>
               <p>
-                <strong>Rol:</strong> <span className="text-amber-400 font-semibold">{user?.role}</span>
+                <strong>Nombre:</strong> <span className="text-green-700">{user?.name} {user?.lastName}</span>
               </p>
-              <p className="text-sm text-slate-500 mt-4">
+              <p>
+                <strong>Rol:</strong> <span className="bg-green-200 text-green-900 px-2 py-1 rounded font-semibold text-sm">{user?.role}</span>
+              </p>
+              <p className="text-sm text-green-700 mt-4 bg-green-50 p-2 rounded">
                 ℹ️ Solo usuarios con rol "admin" pueden acceder a esta pantalla
               </p>
             </div>
@@ -146,13 +149,13 @@ export default function AdminPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-8 bg-blue-900/30 border border-blue-700 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-blue-300 mb-2">🔐 Sistema de Roles Implementado</h3>
-          <ul className="text-blue-200 space-y-2 text-sm">
+        <div className="mt-8 bg-green-50 border-2 border-green-400 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-bold text-green-800 mb-2">🔐 Sistema de Roles Implementado</h3>
+          <ul className="text-green-700 space-y-2 text-sm">
             <li>✅ JWT Token ahora contiene: id, email, name, role, specialization</li>
             <li>✅ Campo "role" puede ser: "admin" o "nutritionist"</li>
             <li>✅ Validación de acceso en el frontend (esta pantalla solo es para admins)</li>
-            <li>✅ Token se verifica en cada acceso mediante /api/auth/me</li>
+            <li>✅ Token se verifica en cada acceso mediante /api/nutritionist/me</li>
           </ul>
         </div>
       </main>
