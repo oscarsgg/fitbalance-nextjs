@@ -18,13 +18,14 @@ export default function AdminPage() {
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
-        const response = await fetch("/api/nutritionist/me")
+        // Solo decodificar el JWT, sin consultar BD
+        const response = await fetch("/api/auth/check-role")
         if (response.ok) {
           const userData = await response.json()
-          setUser(userData.nutritionist)
+          setUser(userData)
 
-          // Verificar si es admin
-          if (userData.nutritionist.role === "admin") {
+          // Verificar si es admin leyendo directamente el token
+          if (userData.role === "admin") {
             setIsAdmin(true)
           } else {
             // Redirigir si no es admin
@@ -155,7 +156,7 @@ export default function AdminPage() {
             <li>✅ JWT Token ahora contiene: id, email, name, role, specialization</li>
             <li>✅ Campo "role" puede ser: "admin" o "nutritionist"</li>
             <li>✅ Validación de acceso en el frontend (esta pantalla solo es para admins)</li>
-            <li>✅ Token se verifica en cada acceso mediante /api/nutritionist/me</li>
+            <li>✅ Token se verifica SIN consultar BD mediante /api/auth/check-role</li>
           </ul>
         </div>
       </main>
