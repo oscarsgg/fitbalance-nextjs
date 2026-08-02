@@ -35,10 +35,11 @@ export async function POST(request) {
 
     const token = jwt.sign(
       {
-        nutritionistId: nutritionist._id,
+        id: nutritionist._id,
         email: nutritionist.email,
         name: nutritionist.name,
         specialization: nutritionist.specialization,
+        role: nutritionist.role || "nutritionist",
       },
       jwtSecret,
       { expiresIn: "7d" }

@@ -16,6 +16,7 @@ export class Nutritionist {
     this.licenseNumber = data.licenseNumber || null
     this.licenseFileUrl = data.licenseFileUrl || null
     this.specialization = data.specialization || null
+    this.role = data.role || "nutritionist" // "admin" o "nutritionist"
     this.createdAt = data.createdAt || new Date()
     this.isActive = data.isActive !== undefined ? data.isActive : true
     this.lastLogin = data.lastLogin || null
