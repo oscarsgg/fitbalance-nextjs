@@ -1,0 +1,11 @@
+{
+  "brand": "FitBalance",
+  "nav": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "languages": {
+    "es": "Español",
+    "en": "English"
+  }
+}

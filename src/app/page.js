@@ -1,17 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { i18n } from '@/lib/i18n/config'
 
-import React from "react";
-import Hero from "../components/hero/Hero"
-import Services from "../components/services/Services"
-import Footer from "../components/footer/Footer"
-
-export default function LandingPage() {
-
-  return (
-    <div className="overflow-x-hidden">
-        <Hero />
-        <Services />
-        <Footer />
-    </div>
-  )
+export default function RootPage() {
+  redirect(`/${i18n.defaultLocale}`)
 }
